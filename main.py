@@ -3,6 +3,7 @@ import sys
 
 from source.map import Map
 from source.cell_types import CellType
+from source.generate_mod import GenerateMod, GenerateModType
 
 
 def main():
@@ -13,8 +14,9 @@ def main():
     screen.fill(pygame.Color('black'))
     fps = 100
 
-    game_map = Map()
-    game_map.load_from_txt('./source/data/map_test.txt', {' ': CellType.NoneCell, '#': CellType.EmptyCell})
+    game_map = Map(27, 27, CellType.NoneCell)
+    # game_map.load_from_txt('./source/data/map_test.txt', {' ': CellType.NoneCell, '#': CellType.EmptyCell})
+    game_map.generate_map({CellType.EmptyCell: GenerateMod(GenerateModType.Base, 1)})
     game_map.move((0, 0))
 
     while True:
