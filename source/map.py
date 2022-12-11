@@ -35,8 +35,8 @@ class Map:
         self._width: int = width
         self._height: int = height
         # visualize params
-        self._cell_width: int = 10
-        self._cell_height: int = 10
+        self._cell_width: int = 20
+        self._cell_height: int = 20
         self._horizontal_distance_between_cells: int = 3
         self._vertical_distance_between_cells: int = 3
         # the beginning from which to draw the map

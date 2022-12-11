@@ -1,12 +1,13 @@
 import pygame.surface
 from enum import Enum
+from source.data.sprites import primitives
 
 
 class CellType(Enum):
-    NoneCell = pygame.Color('black')  # background color
-    EmptyCell = pygame.Color(162, 162, 208)
-    CellWithEnemy = pygame.Color('red')
-    CellWithNPC = pygame.Color(106, 90, 205)
+    NoneCell = primitives.NoneCellSprite()  # background color
+    EmptyCell = primitives.EmptyCellSprite()
+    CellWithEnemy = primitives.CellWithEnemySprite()
+    CellWithNPC = primitives.CellWithNPCSprite()
 
 
 class Cell:
@@ -35,4 +36,5 @@ class Cell:
         ** description **
         draws a cell"""
 
-        pygame.draw.rect(screen, self._type.value, rect)
+        sprite_image = pygame.transform.scale(self._type.value.image, (rect.width, rect.height))
+        screen.blit(sprite_image, (rect.x, rect.y))
