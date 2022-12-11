@@ -6,6 +6,7 @@ import pygame
 from source.generate_mod import GenerateMod, GenerateModType
 from source.simplex_noise import Noise
 from source.cell import Cell, CellType
+from source.triangulation import get_lines_from_triangulation
 
 
 def get_cells_with_same_generate_mod(cell_dict: typing.Dict[CellType, GenerateMod], condition: GenerateModType) \
@@ -101,18 +102,20 @@ class Map:
             for element_index, element in enumerate(value_array):
                 if not self.is_cell_placed(element):
                     continue
-                new_cell_couple = self.get_base_cell(base_cells)
+                new_cell_couple = (CellType.NoneCell, GenerateMod(GenerateModType.Base, 1))
+                if base_cells:
+                    new_cell_couple = self.get_base_cell(base_cells)
+                if probability_cells:
+                    new_probability_cell_couple = self.get_probability_cell(probability_cells)
+                    if new_probability_cell_couple is not None:
+                        new_cell_couple = new_probability_cell_couple
 
-                new_probability_cell_couple = self.get_probability_cell(probability_cells)
-                if new_probability_cell_couple is not None:
-                    new_cell_couple = new_probability_cell_couple
-
-                new_count_cell_couple = self.get_count_cell(count_cells)
-                if new_count_cell_couple is not None:
-                    new_cell_couple = new_count_cell_couple
+                if count_cells:
+                    new_count_cell_couple = self.get_count_cell(count_cells)
+                    if new_count_cell_couple is not None:
+                        new_cell_couple = new_count_cell_couple
 
                 self._cells[array_index][element_index] = Cell(array_index, element_index, new_cell_couple[0])
-        print(*self.get_islands(), sep='\n')
 
     def is_cell_placed(self, random_probability: float) -> bool:
         """** args **
@@ -164,7 +167,19 @@ class Map:
         generate_mod.value = generate_mod.value - 1
         return new_count_cell_type, generate_mod
 
-    def get_islands(self) -> list[list]:
+    def connect_islands(self, screen, rect) -> None:
+        islands = self.get_islands()
+        coordinates = []
+        for cells in islands:
+            center_of_island = random.choice(cells)
+            self._cells[center_of_island.y][center_of_island.x] = Cell(center_of_island.x, center_of_island.y, CellType.CellWithNPC)
+            coordinates.append(pygame.Vector2(center_of_island.y, center_of_island.x))
+        lines = get_lines_from_triangulation(coordinates, self._width, self._height)
+        lines = [(rect.x + i[0] * (self._cell_width + self._horizontal_distance_between_cells),
+                 rect.y + i[1] * (self._cell_height + self._vertical_distance_between_cells)) for i in lines]
+        pygame.draw.aalines(screen, pygame.Color('green'), False, lines)
+
+    def get_islands(self) -> list[list[Cell]]:
         """** description **
         returns a list of 'islands' (a list of cells that are separated from the rest by self._fill cells)"""
 
