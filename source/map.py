@@ -29,16 +29,16 @@ class Map:
         fill  -  default cell type"""
 
         # contains all cells on map
-        self._cells: list = [[Cell(i, j, fill) for j in range(height)] for i in range(width)]
+        self._cells: list = [[Cell(i, j, fill) for j in range(width)] for i in range(height)]
         self._fill = fill
         # size
         self._width: int = width
         self._height: int = height
         # visualize params
-        self._cell_width: int = 20
-        self._cell_height: int = 20
-        self._horizontal_distance_between_cells: int = 3
-        self._vertical_distance_between_cells: int = 3
+        self._cell_width: int = 4
+        self._cell_height: int = 4
+        self._horizontal_distance_between_cells: int = 2
+        self._vertical_distance_between_cells: int = 2
         # the beginning from which to draw the map
         self._draw_start: tuple = (0, 0)
         # generate map params
@@ -80,7 +80,7 @@ class Map:
                     if symbol == '\n':
                         continue
                     result.append(Cell(line_index, symbol_index, cell_dict[symbol]))
-                self._cells.append(result)
+                self._cells[line_index] = result
 
     def generate_map(self, cell_dict: typing.Dict[CellType, GenerateMod]):
         """** args **
@@ -112,6 +112,7 @@ class Map:
                     new_cell_couple = new_count_cell_couple
 
                 self._cells[array_index][element_index] = Cell(array_index, element_index, new_cell_couple[0])
+        print(*self.get_islands(), sep='\n')
 
     def is_cell_placed(self, random_probability: float) -> bool:
         """** args **
@@ -162,6 +163,72 @@ class Map:
 
         generate_mod.value = generate_mod.value - 1
         return new_count_cell_type, generate_mod
+
+    def get_islands(self) -> list[list]:
+        """** description **
+        returns a list of 'islands' (a list of cells that are separated from the rest by self._fill cells)"""
+
+        islands = []
+        for row_index, row in enumerate(self._cells):
+            for cell_index, cell in enumerate(row):
+                if cell.type == self._fill:
+                    continue
+                if any([cell in i for i in islands]):
+                    continue
+                islands.append(self.get_connected_cells(row_index, cell_index))
+        return islands
+
+    def get_connected_cells(self, row_index: int, col_index: int) -> list:
+        """** args **
+        row_index  -  the index of row of the cell from which you want to get docked
+        col_index  -  the index of col of the cell from which you want to get docked
+
+        ** description **
+        returns a list of cells that are separated from the rest by self._fill cells"""
+
+        connected_cells = []
+        coordinates = [(row_index, col_index)]
+        while coordinates:
+            copy_coordinates = coordinates.copy()
+            for cell_coord in coordinates:
+                cell_coord_row, cell_coord_col = cell_coord
+                if self._cells[cell_coord_row][cell_coord_col] == self._fill:
+                    copy_coordinates.remove(cell_coord)
+                else:
+                    copy_coordinates.remove(cell_coord)
+                    connected_cells_coords = [(cell.x, cell.y) for cell in connected_cells]
+                    neighbor_cells = self.get_neighbors(self._cells, *cell_coord, (1, 1))
+                    copy_coordinates.extend([(cell.x, cell.y) for cell in neighbor_cells if cell.type != self._fill and
+                                             (cell.x, cell.y) not in connected_cells_coords])
+                    copy_coordinates = list(set(copy_coordinates))
+                if self._cells[cell_coord_row][cell_coord_col] not in connected_cells:
+                    connected_cells.append(self._cells[cell_coord_row][cell_coord_col])
+            coordinates = list(set(copy_coordinates)).copy()
+        return connected_cells
+
+    @staticmethod
+    def get_neighbors(board: list, row_index: int, col_index: int, search_radius: typing.Tuple[int, int]):
+        """** args **
+        board  -  the board on which the search will be performed
+        row_index  -  the row index of the element around which the search will take place
+        col_index  -  the col index of the element around which the search will take place
+        search_radius  -  tuple of numbers to which a search will be performed in both directions
+
+        ** description **
+        return a list of values, searched in search_radius on board"""
+
+        neighbors = []
+        for i in range(-search_radius[0], search_radius[0] + 1, 1):
+            for j in range(-search_radius[1], search_radius[1] + 1, 1):
+                if i == 0 and j == 0:
+                    continue
+                neighbor_row, neighbor_col = row_index + i, col_index + j
+                if neighbor_row < 0 or neighbor_col < 0:
+                    continue
+                if neighbor_row >= len(board) or neighbor_col >= len(board[0]):
+                    continue
+                neighbors.append(board[neighbor_row][neighbor_col])
+        return neighbors
 
     def draw(self, screen: pygame.Surface, rect: pygame.Rect) -> None:
         """** args **

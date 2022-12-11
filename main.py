@@ -8,13 +8,14 @@ from source.generate_mod import GenerateMod, GenerateModType
 
 def main():
     pygame.init()
-    size = width, height = 500, 500
+    size = width, height = 800, 800
     screen = pygame.display.set_mode(size)
     clock = pygame.time.Clock()
     screen.fill(pygame.Color('black'))
     fps = 60
 
-    game_map = Map(27, 27, CellType.NoneCell)
+    game_map = Map(20, 20, CellType.NoneCell)
+    # game_map.load_from_txt('./source/data/map_test.txt', {' ': CellType.NoneCell, '#': CellType.EmptyCell})
     game_map.generate_map({CellType.EmptyCell: GenerateMod(GenerateModType.Base, 1),
                            CellType.CellWithEnemy: GenerateMod(GenerateModType.Probability, 0.5),
                            CellType.CellWithNPC: GenerateMod(GenerateModType.Count, 2)})

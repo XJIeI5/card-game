@@ -4,7 +4,6 @@
 import random
 import numpy
 import math
-from source.cell import Cell, CellType
 
 
 def FastFloor(x: float):

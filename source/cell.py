@@ -38,3 +38,6 @@ class Cell:
 
         sprite_image = pygame.transform.scale(self._type.value.image, (rect.width, rect.height))
         screen.blit(sprite_image, (rect.x, rect.y))
+
+    def __repr__(self):
+        return f'{self._type} Cell: {self._y}, {self._x}'
