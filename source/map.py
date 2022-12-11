@@ -9,6 +9,19 @@ from source.simplex_noise import Noise
 from source.cell import Cell
 
 
+def get_cells_with_same_generate_mod(cell_dict: typing.Dict[CellType, GenerateMod], condition: GenerateModType) \
+        -> list[typing.Tuple[CellType, GenerateMod]]:
+    """** args **
+    cell_dict  -  dictionary with all types of cells
+    condition  -  searchable generate mod type
+
+    ** description **
+    returns a list of tuples that matches the condition
+    """
+
+    return [(key, value) for key, value in cell_dict.items() if value.type == condition]
+
+
 class Map:
     def __init__(self, width: int, height: int, fill: CellType):
         """** args **
@@ -29,8 +42,10 @@ class Map:
         # the beginning from which to draw the map
         self._draw_start = (0, 0)
         # generate map params
-        self._scale = 0.1  # de-facto, it affects how chaotic the map will be
-        self._basic_cell_appearance_threshold = 130  # affects how often the base blocks will appear
+        self._scale = 0.08  # de-facto, it affects how chaotic the map will be
+        self._basic_cell_appearance_threshold = 150  # affects how often the base blocks will appear
+        self._general_chance_to_appear_probability_cell = 0.03
+        self._general_chance_to_appear_count_cell = 0.03
 
     @property
     def cells(self):
@@ -70,15 +85,76 @@ class Map:
         ** description **
         randomly generates a map of specified sizes with cells of a specific type arranged according to certain rules"""
 
-        base_cells = [(key, value) for key, value in cell_dict.items() if value.type == GenerateModType.Base]
+        base_cells = get_cells_with_same_generate_mod(cell_dict, GenerateModType.Base)
+        probability_cells = get_cells_with_same_generate_mod(cell_dict, GenerateModType.Probability)
+        count_cells = get_cells_with_same_generate_mod(cell_dict, GenerateModType.Count)
+
         values = Noise().calc2D(self._width, self._height, self._scale)
         for array_index, value_array in enumerate(values):
             for element_index, element in enumerate(value_array):
-                is_cell = True if element < self._basic_cell_appearance_threshold else False
-                if not is_cell:
+                if not self.is_cell_placed(element):
                     continue
-                new_cell = random.choices(population=base_cells, weights=[i.value for i in cell_dict.values()], k=1)[0]
-                self._cells[array_index][element_index] = Cell(array_index, element_index, new_cell[0])
+                new_cell_couple = self.get_base_cell(base_cells)
+
+                new_probability_cell_couple = self.get_probability_cell(probability_cells)
+                if new_probability_cell_couple is not None:
+                    new_cell_couple = new_probability_cell_couple
+
+                new_count_cell_couple = self.get_count_cell(count_cells)
+                if new_count_cell_couple is not None:
+                    new_cell_couple = new_count_cell_couple
+
+                self._cells[array_index][element_index] = Cell(array_index, element_index, new_cell_couple[0])
+
+    def is_cell_placed(self, random_probability: float) -> bool:
+        """** args **
+        random_probability  -  random number
+
+        ** description **
+        return True or False, based on input number and self._basic_cell_appearance_threshold"""
+
+        return True if random_probability < self._basic_cell_appearance_threshold else False
+
+    @staticmethod
+    def get_base_cell(base_cells: list[typing.Tuple[CellType, GenerateMod]]) -> typing.Tuple[CellType, GenerateMod]:
+        """** args **
+        base_cells  -  list of cells to choose one
+
+        ** description **
+        return a random cell, based on weights on their generate mod"""
+        return random.choices(population=base_cells, weights=[i[1].value for i in base_cells], k=1)[0]
+
+    def get_probability_cell(self, probability_cells: list[typing.Tuple[CellType, GenerateMod]]) \
+            -> typing.Union[None, typing.Tuple[CellType, GenerateMod]]:
+        """** args **
+        probability_cells  -  list of cells to choose one
+
+        ** description **
+        return a random cell or None, based on weights on their generate mod and
+         self._general_chance_to_appear_probability_cell"""
+
+        if random.random() > self._general_chance_to_appear_probability_cell:
+            return None
+        return random.choices(population=probability_cells, weights=[i[1].value for i in probability_cells], k=1)[0]
+
+    def get_count_cell(self, count_cells: list[typing.Tuple[CellType, GenerateMod]]) \
+            -> typing.Union[None, typing.Tuple[CellType, GenerateMod]]:
+        """** args **
+        count_cells  -  list of cells to choose one
+        
+        ** description **
+        return a random cell or None, based on weights on their generate mod,
+         self._general_chance_to_appear_count_cell and value of generate mod"""
+
+        if random.random() > self._general_chance_to_appear_probability_cell:
+            return None
+
+        new_count_cell_type, generate_mod = random.choice(count_cells)
+        if generate_mod.value <= 0 or generate_mod.type != GenerateModType.Count:
+            return None
+
+        generate_mod.value = generate_mod.value - 1
+        return new_count_cell_type, generate_mod
 
     def draw(self, screen: pygame.Surface, rect: pygame.Rect) -> None:
         """** args **

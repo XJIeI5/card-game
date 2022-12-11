@@ -19,3 +19,11 @@ class GenerateMod:
     @property
     def value(self):
         return self._value
+
+    @value.setter
+    def value(self, value):
+        if not isinstance(value, int):
+            raise ValueError
+        if self._type != GenerateModType.Count:
+            raise AttributeError("you cannot change the value of this type of generate mod type")
+        self._value = value

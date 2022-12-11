@@ -16,7 +16,9 @@ def main():
 
     game_map = Map(27, 27, CellType.NoneCell)
     # game_map.load_from_txt('./source/data/map_test.txt', {' ': CellType.NoneCell, '#': CellType.EmptyCell})
-    game_map.generate_map({CellType.EmptyCell: GenerateMod(GenerateModType.Base, 1)})
+    game_map.generate_map({CellType.EmptyCell: GenerateMod(GenerateModType.Base, 1),
+                           CellType.CellWithEnemy: GenerateMod(GenerateModType.Probability, 0.5),
+                           CellType.CellWithNPC: GenerateMod(GenerateModType.Count, 2)})
     game_map.move((0, 0))
 
     while True:
