@@ -37,8 +37,8 @@ class Map:
         # visualize params
         self._cell_width: int = 15
         self._cell_height: int = 15
-        self._vertical_distance_between_cells = 3
         self._horizontal_distance_between_cells = 3
+        self._vertical_distance_between_cells = 3
         # the beginning from which to draw the map
         self._draw_start = (0, 0)
         # generate map params
@@ -168,9 +168,9 @@ class Map:
         for row_index in range(len(self._cells)):
             for col_index in range(len(self._cells[row_index])):
                 cell_rect = pygame.Rect((self._draw_start[0] + col_index *
-                                         (self._cell_width + self._vertical_distance_between_cells),
+                                         (self._cell_width + self._horizontal_distance_between_cells),
                                          self._draw_start[1] + row_index *
-                                         (self._cell_height + self._horizontal_distance_between_cells),
+                                         (self._cell_height + self._vertical_distance_between_cells),
                                          self._cell_width, self._cell_height))
                 self._cells[row_index][col_index].draw(surface, cell_rect)
         screen.blit(surface, (rect.x, rect.y))
