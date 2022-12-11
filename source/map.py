@@ -30,21 +30,23 @@ class Map:
 
         # contains all cells on map
         self._cells: list = [[Cell(i, j, fill) for j in range(height)] for i in range(width)]
+        self._fill = fill
         # size
-        self._width = width
-        self._height = height
+        self._width: int = width
+        self._height: int = height
         # visualize params
-        self._cell_width: int = 15
-        self._cell_height: int = 15
-        self._horizontal_distance_between_cells = 3
-        self._vertical_distance_between_cells = 3
+        self._cell_width: int = 10
+        self._cell_height: int = 10
+        self._horizontal_distance_between_cells: int = 3
+        self._vertical_distance_between_cells: int = 3
         # the beginning from which to draw the map
-        self._draw_start = (0, 0)
+        self._draw_start: tuple = (0, 0)
         # generate map params
-        self._scale = 0.08  # de-facto, it affects how chaotic the map will be
-        self._basic_cell_appearance_threshold = 150  # affects how often the base blocks will appear
-        self._general_chance_to_appear_probability_cell = 0.03
-        self._general_chance_to_appear_count_cell = 0.03
+        self._noise = Noise()
+        self._scale: float = 0.08  # de-facto, it affects how chaotic the map will be
+        self._basic_cell_appearance_threshold: float = 130  # affects how often the base blocks will appear
+        self._general_chance_to_appear_probability_cell: float = 0.03
+        self._general_chance_to_appear_count_cell: float = 0.03
 
     @property
     def cells(self):
@@ -57,6 +59,10 @@ class Map:
     @property
     def height(self):
         return self._height
+
+    @property
+    def noise(self):
+        return self._noise
 
     def load_from_txt(self, file: str, cell_dict: typing.Dict[str, CellType]) -> None:
         """** args **
@@ -88,7 +94,9 @@ class Map:
         probability_cells = get_cells_with_same_generate_mod(cell_dict, GenerateModType.Probability)
         count_cells = get_cells_with_same_generate_mod(cell_dict, GenerateModType.Count)
 
-        values = Noise().calc2D(self._width, self._height, self._scale)
+        self._cells = [[Cell(i, j, self._fill) for j in range(self._height)] for i in range(self._width)]
+        self._noise.update_perm()
+        values = self._noise.calc2D_smooth(self._width, self._height, self._scale, 3)
         for array_index, value_array in enumerate(values):
             for element_index, element in enumerate(value_array):
                 if not self.is_cell_placed(element):
@@ -112,7 +120,7 @@ class Map:
         ** description **
         return True or False, based on input number and self._basic_cell_appearance_threshold"""
 
-        return True if random_probability < self._basic_cell_appearance_threshold else False
+        return True if random_probability > self._basic_cell_appearance_threshold else False
 
     @staticmethod
     def get_base_cell(base_cells: list[typing.Tuple[CellType, GenerateMod]]) -> typing.Tuple[CellType, GenerateMod]:

@@ -28,16 +28,15 @@ def main():
                 sys.exit()
         state = pygame.key.get_pressed()
         if state[pygame.K_w]:
-            map_pos[1] -= 1
-        if state[pygame.K_s]:
             map_pos[1] += 1
+        if state[pygame.K_s]:
+            map_pos[1] -= 1
         if state[pygame.K_a]:
-            map_pos[0] -= 1
-        if state[pygame.K_d]:
             map_pos[0] += 1
-        # map_pos[0] -= 1
-        screen.fill(pygame.Color('black'))
+        if state[pygame.K_d]:
+            map_pos[0] -= 1
         game_map.move(map_pos)
+        screen.fill(pygame.Color('black'))
         game_map.draw(screen, pygame.Rect((50, 50, width - 100, height - 100)))
         clock.tick(fps)
         pygame.display.flip()

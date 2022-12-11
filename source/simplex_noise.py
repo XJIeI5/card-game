@@ -3,6 +3,8 @@
 
 import random
 import numpy
+import math
+from source.cell import Cell, CellType
 
 
 def FastFloor(x: float):
@@ -30,6 +32,44 @@ class Noise:
             for j in range(height):
                 values[i, j] = self.generate(i * scale, j * scale) * 128 + 128
         return list(values)
+
+    def calc2D_smooth(self, width: int, height: int, scale: float, smooth_count: int):
+        values = numpy.array(self.calc2D(width, height, scale))
+        kernel = numpy.array([1, 2, 1]) / 4
+        for i in range(smooth_count):
+            values = numpy.apply_along_axis(lambda x: numpy.convolve(x, kernel, mode='same'), 0, values)
+            values = numpy.apply_along_axis(lambda x: numpy.convolve(x, kernel, mode='same'), 1, values)
+        return list(values)
+
+    def calc2D_corners(self, width: int, height: int, scale: float):
+        values = numpy.zeros(width * height).reshape((width, height))
+        for i in range(height):
+            for j in range(width):
+                values[i, j] = self.smooth_noise(i * scale, j * scale) * 128 + 128
+                print(values[i][j])
+        return list(values)
+
+    def interpolate(self, x, y):
+        int_x = int(x)
+        fraction_x = x - int_x
+        int_y = int(y)
+        fraction_y = y - int_y
+        v1 = self.smooth_noise(int_x, int_y)
+        v2 = self.smooth_noise(int_x + 1, int_y)
+        v3 = self.smooth_noise(int_x, int_y + 1)
+        v4 = self.smooth_noise(int_x + 1, int_y + 1)
+        i1 = self.cosine_interpolate(v1, v2, fraction_x)
+        i2 = self.cosine_interpolate(v3, v4, fraction_x)
+        return self.cosine_interpolate(i1, i2, fraction_y) * 100
+
+    def smooth_noise(self, x, y):
+        corners = (self.generate(x - 1, y - 1) + self.generate(x + 1, y - 1) + self.generate(x - 1,
+                                                                                             y + 1) + self.generate(
+            x + 1, y + 1)) / 16
+        sides = (self.generate(x - 1, y) + self.generate(x + 1, y) + self.generate(x, y + 1) + self.generate(x,
+                                                                                                             y - 1)) / 8
+        center = self.generate(x, y) / 4
+        return corners + sides + center
 
     @staticmethod
     def generate(x: float, y: float):
@@ -85,3 +125,15 @@ class Noise:
             n2 = t2 * t2 * Grad(Noise.perm_original[ii + 1 + Noise.perm_original[jj + 1]], x2, y2)
 
         return 40.0 * (n0 + n1 + n2)
+
+    @staticmethod
+    def cosine_interpolate(a, b, x):
+        ft = x * math.pi
+        f = (1 - math.cos(ft)) * 0.5
+        return a * (a - f) + b * f
+
+    @staticmethod
+    def update_perm():
+        """** description **
+        sets perm_original new values"""
+        Noise.perm_original = [random.randint(0, 255) for i in range(512)]
