@@ -164,16 +164,16 @@ class Map:
         ** description **
         draws a map"""
 
-        surface = pygame.Surface((rect.width - self._draw_start[0], rect.height - self._draw_start[1]))
-        for col_index in range(len(self._cells)):
-            for row_index in range(len(self._cells[col_index])):
-                cell_rect = pygame.rect.Rect((rect.x + row_index *
-                                              (self._cell_width + self._horizontal_distance_between_cells),
-                                              rect.y + col_index *
-                                              (self._cell_height + self._vertical_distance_between_cells),
-                                              self._cell_width, self._cell_height))
-                self._cells[col_index][row_index].draw(surface, cell_rect)
-        screen.blit(surface, (self._draw_start[0] + rect.x, self._draw_start[1] + rect.y), rect)
+        surface = pygame.Surface((rect.width, rect.height))
+        for row_index in range(len(self._cells)):
+            for col_index in range(len(self._cells[row_index])):
+                cell_rect = pygame.Rect((self._draw_start[0] + col_index *
+                                         (self._cell_width + self._vertical_distance_between_cells),
+                                         self._draw_start[1] + row_index *
+                                         (self._cell_height + self._horizontal_distance_between_cells),
+                                         self._cell_width, self._cell_height))
+                self._cells[row_index][col_index].draw(surface, cell_rect)
+        screen.blit(surface, (rect.x, rect.y))
 
     def move(self, new_pos: typing.Tuple[int, int]) -> None:
         """** args **
