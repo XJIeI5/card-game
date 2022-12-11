@@ -116,6 +116,7 @@ class Map:
                         new_cell_couple = new_count_cell_couple
 
                 self._cells[array_index][element_index] = Cell(array_index, element_index, new_cell_couple[0])
+        self.connect_islands()
 
     def is_cell_placed(self, random_probability: float) -> bool:
         """** args **
@@ -167,17 +168,62 @@ class Map:
         generate_mod.value = generate_mod.value - 1
         return new_count_cell_type, generate_mod
 
-    def connect_islands(self, screen, rect) -> None:
+    def connect_islands(self) -> None:
+        """** description **
+        finds a random cell on each island, triangulates and builds bridges between each island"""
         islands = self.get_islands()
         coordinates = []
         for cells in islands:
             center_of_island = random.choice(cells)
-            self._cells[center_of_island.y][center_of_island.x] = Cell(center_of_island.x, center_of_island.y, CellType.CellWithNPC)
             coordinates.append(pygame.Vector2(center_of_island.y, center_of_island.x))
         lines = get_lines_from_triangulation(coordinates, self._width, self._height)
-        lines = [(rect.x + i[0] * (self._cell_width + self._horizontal_distance_between_cells),
-                 rect.y + i[1] * (self._cell_height + self._vertical_distance_between_cells)) for i in lines]
-        pygame.draw.aalines(screen, pygame.Color('green'), False, lines)
+        for line_index in range(len(lines) - 1):
+            line_points = self.bresenham_algorithm(lines[line_index], lines[line_index + 1])
+            for point in line_points:
+                self._cells[point[0]][point[1]] = Cell(*point, CellType.EmptyCell)
+
+    @staticmethod
+    def bresenham_algorithm(point1, point2):
+        """** args **
+        point1  -  start of line
+        point2  -  end of line
+
+        ** description **
+        returns the coordinates of the points that need to be traversed to move from point1 to point2"""
+        points = []
+        dx = point2[0] - point1[0]
+        dy = point2[1] - point1[1]
+
+        sign_x = 1 if dx > 0 else -1 if dx < 0 else 0
+        sign_y = 1 if dy > 0 else -1 if dy < 0 else 0
+
+        if dx < 0:
+            dx = -dx
+        if dy < 0:
+            dy = -dy
+
+        if dx > dy:
+            pdx, pdy = sign_x, 0
+            es, el = dy, dx
+        else:
+            pdx, pdy = 0, sign_y
+            es, el = dx, dy
+
+        x, y = point1
+        error, t = el / 2, 0
+        points.append([x, y])
+        while t < el:
+            error -= es
+            if error < 0:
+                error += el
+                x += sign_x
+                y += sign_y
+            else:
+                x += pdx
+                y += pdy
+            t += 1
+            points.append([x, y])
+        return points
 
     def get_islands(self) -> list[list[Cell]]:
         """** description **

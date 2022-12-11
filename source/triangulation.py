@@ -99,7 +99,7 @@ def get_lines_from_triangulation(points, width, height):
     for triangle in triangles:
         line = []
         for edge in triangle.edges:
-            line.extend([(point.x, point.y) for point in edge])
+            line.extend([(int(point.x), int(point.y)) for point in edge])
         if line in lines:
             continue
         lines.extend(line)

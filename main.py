@@ -20,7 +20,6 @@ def main():
     map_pos = [0, 0]
     game_map.move((0, 0))
     game_map.draw(screen, pygame.Rect((50, 50, width - 100, height - 100)))
-    game_map.connect_islands(screen, pygame.Rect((50, 50, width - 100, height - 100)))
 
     while True:
         for event in pygame.event.get():
