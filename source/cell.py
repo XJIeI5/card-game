@@ -1,6 +1,12 @@
 import pygame.surface
+from enum import Enum
 
-from source.cell_types import CellType
+
+class CellType(Enum):
+    NoneCell = pygame.Color('black')  # background color
+    EmptyCell = pygame.Color(162, 162, 208)
+    CellWithEnemy = pygame.Color('red')
+    CellWithNPC = pygame.Color(106, 90, 205)
 
 
 class Cell:

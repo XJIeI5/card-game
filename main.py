@@ -2,7 +2,7 @@ import pygame
 import sys
 
 from source.map import Map
-from source.cell_types import CellType
+from source.cell import CellType
 from source.generate_mod import GenerateMod, GenerateModType
 
 

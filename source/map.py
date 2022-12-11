@@ -3,10 +3,9 @@ import typing
 
 import pygame
 
-from source.cell_types import CellType
 from source.generate_mod import GenerateMod, GenerateModType
 from source.simplex_noise import Noise
-from source.cell import Cell
+from source.cell import Cell, CellType
 
 
 def get_cells_with_same_generate_mod(cell_dict: typing.Dict[CellType, GenerateMod], condition: GenerateModType) \
