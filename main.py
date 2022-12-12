@@ -4,6 +4,7 @@ import sys
 from source.map import Map
 from source.cell import CellType
 from source.generate_mod import GenerateMod, GenerateModType
+from source.triangulation import get_lines_from_triangulation
 
 
 def main():
@@ -16,7 +17,9 @@ def main():
 
     game_map = Map(50, 50, CellType.NoneCell)
     # game_map.load_from_txt('./source/data/map_test.txt', {' ': CellType.NoneCell, '#': CellType.EmptyCell})
-    game_map.generate_map({CellType.EmptyCell: GenerateMod(GenerateModType.Base, 1)})
+    game_map.generate_map({CellType.EmptyCell: GenerateMod(GenerateModType.Base, 1),
+                           CellType.CellWithNPC: GenerateMod(GenerateModType.Count, 3),
+                           CellType.CellWithEnemy: GenerateMod(GenerateModType.Probability, 50)})
     map_pos = [0, 0]
     game_map.move((0, 0))
     game_map.draw(screen, pygame.Rect((50, 50, width - 100, height - 100)))

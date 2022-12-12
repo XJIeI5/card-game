@@ -29,12 +29,13 @@ class Map:
         height  -  height of the map
         fill  -  default cell type"""
 
-        # contains all cells on map
-        self._cells: list = [[Cell(i, j, fill) for j in range(width)] for i in range(height)]
-        self._fill = fill
         # size
         self._width: int = width
         self._height: int = height
+        # contains all cells on map
+        self._fill = fill
+        self._cells = []
+        self.fill_map()
         # visualize params
         self._cell_width: int = 4
         self._cell_height: int = 4
@@ -83,6 +84,11 @@ class Map:
                     result.append(Cell(line_index, symbol_index, cell_dict[symbol]))
                 self._cells[line_index] = result
 
+    def fill_map(self):
+        """** description **
+        recreates the self._cells from the Cell.type = self._fill"""
+        self._cells = [[Cell(i, j, self._fill) for j in range(self._height)] for i in range(self._width)]
+
     def generate_map(self, cell_dict: typing.Dict[CellType, GenerateMod]):
         """** args **
         size  -  sets the size of the generated map
@@ -95,9 +101,24 @@ class Map:
         probability_cells = get_cells_with_same_generate_mod(cell_dict, GenerateModType.Probability)
         count_cells = get_cells_with_same_generate_mod(cell_dict, GenerateModType.Count)
 
-        self._cells = [[Cell(i, j, self._fill) for j in range(self._height)] for i in range(self._width)]
+        self.fill_map()
         self._noise.update_perm()
+
+        placed_cell_indexes = self.place_base_cells(base_cells)
+        placed_cell_indexes += self.place_bridge_cells(base_cells)
+        self.place_probability_cells(probability_cells, placed_cell_indexes)
+        self.place_count_cells(count_cells, base_cells, placed_cell_indexes)
+
+    def place_base_cells(self, base_cells: list[typing.Tuple[CellType, GenerateMod]]) -> list[typing.Tuple[int, int]]:
+        """** args **
+        base_cells  -  list of CellTypes and GenerateMod with GenerateMod.type == Base
+
+        ** description **
+        places base type cells on map arranges according to the generated noise
+         and returns the coordinates to which they were placed"""
+
         values = self._noise.calc2D_smooth(self._width, self._height, self._scale, 3)
+        base_cells_placed_cell_indexes = []
         for array_index, value_array in enumerate(values):
             for element_index, element in enumerate(value_array):
                 if not self.is_cell_placed(element):
@@ -105,18 +126,86 @@ class Map:
                 new_cell_couple = (CellType.NoneCell, GenerateMod(GenerateModType.Base, 1))
                 if base_cells:
                     new_cell_couple = self.get_base_cell(base_cells)
-                if probability_cells:
-                    new_probability_cell_couple = self.get_probability_cell(probability_cells)
-                    if new_probability_cell_couple is not None:
-                        new_cell_couple = new_probability_cell_couple
-
-                if count_cells:
-                    new_count_cell_couple = self.get_count_cell(count_cells)
-                    if new_count_cell_couple is not None:
-                        new_cell_couple = new_count_cell_couple
 
                 self._cells[array_index][element_index] = Cell(array_index, element_index, new_cell_couple[0])
-        self.connect_islands()
+                base_cells_placed_cell_indexes.append((array_index, element_index))
+        return base_cells_placed_cell_indexes
+
+    def place_bridge_cells(self, base_cells: list[typing.Tuple[CellType, GenerateMod]])\
+            -> list[typing.Tuple[int, int]]:
+        """** args **
+        base_cells  - list of CellTypes and GenerateMod with GenerateMod.type == Base
+
+         ** description **
+         places base type cells on map to connect islands and returns the coordinates to which they were placed"""
+
+        bridge_cells_placed_cell_indexes = []
+        bridge_cell_indexes = self.connect_cells(self.get_cell_on_each_island())
+        for cell_index in bridge_cell_indexes:
+            array_index, element_index = cell_index
+            new_cell_couple = (CellType.NoneCell, GenerateMod(GenerateModType.Base, 1))
+            if base_cells:
+                new_cell_couple = self.get_base_cell(base_cells)
+            self._cells[array_index][element_index] = Cell(array_index, element_index, new_cell_couple[0])
+            bridge_cells_placed_cell_indexes.append((array_index, element_index))
+        return bridge_cells_placed_cell_indexes
+
+    def place_probability_cells(self, probability_cells: list[typing.Tuple[CellType, GenerateMod]],
+                                placed_cell_indexes: list[typing.Tuple[int, int]]) -> list[typing.Tuple[int, int]]:
+        """** args **
+        probability_cells  -  list of CellTypes and GenerateMod with GenerateMod.type == Probability
+        placed_cell_indexes  -  indexes of GenerateMod.type == Base cells on map
+
+        ** description **
+        places probability type cells on the map on base type cells
+         and returns the coordinates to which they were placed"""
+
+        probability_cells_placed_cell_indexes = []
+        for cell_index in placed_cell_indexes:
+            array_index, element_index = cell_index
+            new_cell_couple = (CellType.EmptyCell, GenerateMod(GenerateModType.Base, 1))
+            if not probability_cells:
+                break
+            new_probability_cell_couple = self.get_probability_cell(probability_cells)
+            if new_probability_cell_couple is not None:
+                new_cell_couple = new_probability_cell_couple
+            self._cells[array_index][element_index] = Cell(array_index, element_index, new_cell_couple[0])
+            probability_cells_placed_cell_indexes.append((array_index, element_index))
+        return probability_cells_placed_cell_indexes
+
+    def place_count_cells(self, count_cells: list[typing.Tuple[CellType, GenerateMod]],
+                          base_cells: list[typing.Tuple[CellType, GenerateMod]],
+                          placed_cell_indexes: list[typing.Tuple[int, int]]) -> list[typing.Tuple[int, int]]:
+        """** args **
+        count_cells  -  list of CellTypes and GenerateMod with GenerateMod.type == Count
+        base_cells  -  list of CellTypes and GenerateMod with GenerateMod.type == Base
+        placed_cell_indexes  -  indexes of GenerateMod.type == Base cells on map
+
+        ** description **
+        places count type cells on the map on base type cells and returns the coordinates to which they were placed"""
+
+        count_cells_placed_cell_indexes = []
+        base_cell_types: list[CellType] = [i[0] for i in base_cells]
+        count_cell_amount = sum([i[1].value for i in count_cells])
+        try:
+            count_cell_place_indexes = random.sample(placed_cell_indexes, count_cell_amount)
+        except ValueError:
+            return []
+        while count_cell_amount > 0:
+            new_count_cell_couple = self.get_count_cell(count_cells)
+            current_count_cell_place_index = count_cell_place_indexes[count_cell_amount - 1]
+            array_index, element_index = current_count_cell_place_index
+            if new_count_cell_couple is None:
+                continue
+            if self._cells[array_index][element_index].type \
+                    not in base_cell_types:
+                count_cell_place_indexes = random.sample(placed_cell_indexes, count_cell_amount)
+                continue
+            self._cells[array_index][element_index] = \
+                Cell(array_index, element_index, new_count_cell_couple[0])
+            count_cells_placed_cell_indexes.append(current_count_cell_place_index)
+            count_cell_amount -= 1
+        return count_cells_placed_cell_indexes
 
     def is_cell_placed(self, random_probability: float) -> bool:
         """** args **
@@ -149,7 +238,8 @@ class Map:
             return None
         return random.choices(population=probability_cells, weights=[i[1].value for i in probability_cells], k=1)[0]
 
-    def get_count_cell(self, count_cells: list[typing.Tuple[CellType, GenerateMod]]) \
+    @staticmethod
+    def get_count_cell(count_cells: list[typing.Tuple[CellType, GenerateMod]]) \
             -> typing.Union[None, typing.Tuple[CellType, GenerateMod]]:
         """** args **
         count_cells  -  list of cells to choose one
@@ -158,9 +248,6 @@ class Map:
         return a random cell or None, based on weights on their generate mod,
          self._general_chance_to_appear_count_cell and value of generate mod"""
 
-        if random.random() > self._general_chance_to_appear_probability_cell:
-            return None
-
         new_count_cell_type, generate_mod = random.choice(count_cells)
         if generate_mod.value <= 0 or generate_mod.type != GenerateModType.Count:
             return None
@@ -168,28 +255,50 @@ class Map:
         generate_mod.value = generate_mod.value - 1
         return new_count_cell_type, generate_mod
 
-    def connect_islands(self) -> None:
-        """** description **
-        finds a random cell on each island, triangulates and builds bridges between each island"""
-        islands = self.get_islands()
-        coordinates = []
-        for cells in islands:
-            center_of_island = random.choice(cells)
-            coordinates.append(pygame.Vector2(center_of_island.y, center_of_island.x))
+    def connect_cells(self, coordinates: list[typing.Tuple[int, int]]) -> list:
+        """** args **
+        coordinates  -  points to build bridges
+
+        ** description **
+        triangulates and builds bridges between points, which indexes returns"""
+
+        result = []
         lines = get_lines_from_triangulation(coordinates, self._width, self._height)
         for line_index in range(len(lines) - 1):
             line_points = self.bresenham_algorithm(lines[line_index], lines[line_index + 1])
-            for point in line_points:
-                self._cells[point[0]][point[1]] = Cell(*point, CellType.EmptyCell)
+            for point in line_points[1:]:
+                if self._cells[point[0]][point[1]].type != self._fill:
+                    break
+                result.append(point)
+        return result
+
+    def get_cell_on_each_island(self) -> list[pygame.Vector2]:
+        """** description **
+        return random cell from each island"""
+
+        islands = self.get_islands()
+        coordinates = []
+        for cells in islands:
+            closest_cell = None
+            shortest_distance = -1
+            center_cell = self._cells[self._width // 2][self._height // 2]
+            for cell in cells:
+                distance = ((cell.x - center_cell.x) ** 2) + ((cell.y - center_cell.y) ** 2)
+                if distance < shortest_distance or shortest_distance == -1:
+                    shortest_distance = distance
+                    closest_cell = cell
+            coordinates.append(pygame.Vector2(closest_cell.x, closest_cell.y))
+        return coordinates
 
     @staticmethod
-    def bresenham_algorithm(point1, point2):
+    def bresenham_algorithm(point1, point2) -> list[typing.Tuple[int, int]]:
         """** args **
         point1  -  start of line
         point2  -  end of line
 
         ** description **
         returns the coordinates of the points that need to be traversed to move from point1 to point2"""
+
         points = []
         dx = point2[0] - point1[0]
         dy = point2[1] - point1[1]
