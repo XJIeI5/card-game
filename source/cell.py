@@ -4,7 +4,6 @@ from source.data.sprites import primitives
 
 
 class CellType(Enum):
-    NoneCell = primitives.NoneCellSprite()  # background color
     EmptyCell = primitives.EmptyCellSprite()
     CellWithEnemy = primitives.CellWithEnemySprite()
     CellWithNPC = primitives.CellWithNPCSprite()
@@ -36,6 +35,8 @@ class Cell:
         ** description **
         draws a cell"""
 
+        if not self._type:
+            return
         sprite_image = pygame.transform.scale(self._type.value.image, (rect.width, rect.height))
         screen.blit(sprite_image, (rect.x, rect.y))
 

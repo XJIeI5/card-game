@@ -37,8 +37,8 @@ class Map:
         self._cells = []
         self.fill_map()
         # visualize params
-        self._cell_width: int = 4
-        self._cell_height: int = 4
+        self._cell_width: int = 8
+        self._cell_height: int = 8
         self._horizontal_distance_between_cells: int = 2
         self._vertical_distance_between_cells: int = 2
         # the beginning from which to draw the map
@@ -49,22 +49,6 @@ class Map:
         self._basic_cell_appearance_threshold: float = 130  # affects how often the base blocks will appear
         self._general_chance_to_appear_probability_cell: float = 0.03
         self._general_chance_to_appear_count_cell: float = 0.03
-
-    @property
-    def cells(self):
-        return self._cells
-
-    @property
-    def width(self):
-        return self._width
-
-    @property
-    def height(self):
-        return self._height
-
-    @property
-    def noise(self):
-        return self._noise
 
     def load_from_txt(self, file: str, cell_dict: typing.Dict[str, CellType]) -> None:
         """** args **
@@ -104,12 +88,13 @@ class Map:
         self.fill_map()
         self._noise.update_perm()
 
-        placed_cell_indexes = self.place_base_cells(base_cells)
+        placed_cell_indexes = self.place_base_type_cells(base_cells)
         placed_cell_indexes += self.place_bridge_cells(base_cells)
-        self.place_probability_cells(probability_cells, placed_cell_indexes)
-        self.place_count_cells(count_cells, base_cells, placed_cell_indexes)
+        self.place_probability_type_cells(probability_cells, placed_cell_indexes)
+        self.place_count_type_cells(count_cells, base_cells, placed_cell_indexes)
 
-    def place_base_cells(self, base_cells: list[typing.Tuple[CellType, GenerateMod]]) -> list[typing.Tuple[int, int]]:
+    def place_base_type_cells(self, base_cells: list[typing.Tuple[CellType, GenerateMod]])\
+            -> list[typing.Tuple[int, int]]:
         """** args **
         base_cells  -  list of CellTypes and GenerateMod with GenerateMod.type == Base
 
@@ -123,15 +108,15 @@ class Map:
             for element_index, element in enumerate(value_array):
                 if not self.is_cell_placed(element):
                     continue
-                new_cell_couple = (CellType.NoneCell, GenerateMod(GenerateModType.Base, 1))
+                new_cell_couple = (None, GenerateMod(GenerateModType.Base, 1))
                 if base_cells:
-                    new_cell_couple = self.get_base_cell(base_cells)
+                    new_cell_couple = self.get_base_type_cell(base_cells)
 
                 self._cells[array_index][element_index] = Cell(array_index, element_index, new_cell_couple[0])
                 base_cells_placed_cell_indexes.append((array_index, element_index))
         return base_cells_placed_cell_indexes
 
-    def place_bridge_cells(self, base_cells: list[typing.Tuple[CellType, GenerateMod]])\
+    def place_bridge_cells(self, base_cells: list[typing.Tuple[CellType, GenerateMod]]) \
             -> list[typing.Tuple[int, int]]:
         """** args **
         base_cells  - list of CellTypes and GenerateMod with GenerateMod.type == Base
@@ -143,15 +128,15 @@ class Map:
         bridge_cell_indexes = self.connect_cells(self.get_cell_on_each_island())
         for cell_index in bridge_cell_indexes:
             array_index, element_index = cell_index
-            new_cell_couple = (CellType.NoneCell, GenerateMod(GenerateModType.Base, 1))
+            new_cell_couple = (None, GenerateMod(GenerateModType.Base, 1))
             if base_cells:
-                new_cell_couple = self.get_base_cell(base_cells)
+                new_cell_couple = self.get_base_type_cell(base_cells)
             self._cells[array_index][element_index] = Cell(array_index, element_index, new_cell_couple[0])
             bridge_cells_placed_cell_indexes.append((array_index, element_index))
         return bridge_cells_placed_cell_indexes
 
-    def place_probability_cells(self, probability_cells: list[typing.Tuple[CellType, GenerateMod]],
-                                placed_cell_indexes: list[typing.Tuple[int, int]]) -> list[typing.Tuple[int, int]]:
+    def place_probability_type_cells(self, probability_cells: list[typing.Tuple[CellType, GenerateMod]],
+                                     placed_cell_indexes: list[typing.Tuple[int, int]]) -> list[typing.Tuple[int, int]]:
         """** args **
         probability_cells  -  list of CellTypes and GenerateMod with GenerateMod.type == Probability
         placed_cell_indexes  -  indexes of GenerateMod.type == Base cells on map
@@ -166,16 +151,16 @@ class Map:
             new_cell_couple = (CellType.EmptyCell, GenerateMod(GenerateModType.Base, 1))
             if not probability_cells:
                 break
-            new_probability_cell_couple = self.get_probability_cell(probability_cells)
+            new_probability_cell_couple = self.get_probability_type_cell(probability_cells)
             if new_probability_cell_couple is not None:
                 new_cell_couple = new_probability_cell_couple
             self._cells[array_index][element_index] = Cell(array_index, element_index, new_cell_couple[0])
             probability_cells_placed_cell_indexes.append((array_index, element_index))
         return probability_cells_placed_cell_indexes
 
-    def place_count_cells(self, count_cells: list[typing.Tuple[CellType, GenerateMod]],
-                          base_cells: list[typing.Tuple[CellType, GenerateMod]],
-                          placed_cell_indexes: list[typing.Tuple[int, int]]) -> list[typing.Tuple[int, int]]:
+    def place_count_type_cells(self, count_cells: list[typing.Tuple[CellType, GenerateMod]],
+                               base_cells: list[typing.Tuple[CellType, GenerateMod]],
+                               placed_cell_indexes: list[typing.Tuple[int, int]]) -> list[typing.Tuple[int, int]]:
         """** args **
         count_cells  -  list of CellTypes and GenerateMod with GenerateMod.type == Count
         base_cells  -  list of CellTypes and GenerateMod with GenerateMod.type == Base
@@ -187,12 +172,14 @@ class Map:
         count_cells_placed_cell_indexes = []
         base_cell_types: list[CellType] = [i[0] for i in base_cells]
         count_cell_amount = sum([i[1].value for i in count_cells])
+        print(count_cell_amount)
         try:
             count_cell_place_indexes = random.sample(placed_cell_indexes, count_cell_amount)
         except ValueError:
             return []
         while count_cell_amount > 0:
-            new_count_cell_couple = self.get_count_cell(count_cells)
+            count_cell_amount -= 1
+            new_count_cell_couple = self.get_count_type_cell(count_cells)
             current_count_cell_place_index = count_cell_place_indexes[count_cell_amount - 1]
             array_index, element_index = current_count_cell_place_index
             if new_count_cell_couple is None:
@@ -204,7 +191,6 @@ class Map:
             self._cells[array_index][element_index] = \
                 Cell(array_index, element_index, new_count_cell_couple[0])
             count_cells_placed_cell_indexes.append(current_count_cell_place_index)
-            count_cell_amount -= 1
         return count_cells_placed_cell_indexes
 
     def is_cell_placed(self, random_probability: float) -> bool:
@@ -217,15 +203,17 @@ class Map:
         return True if random_probability > self._basic_cell_appearance_threshold else False
 
     @staticmethod
-    def get_base_cell(base_cells: list[typing.Tuple[CellType, GenerateMod]]) -> typing.Tuple[CellType, GenerateMod]:
+    def get_base_type_cell(base_cells: list[typing.Tuple[CellType, GenerateMod]])\
+            -> typing.Tuple[CellType, GenerateMod]:
         """** args **
         base_cells  -  list of cells to choose one
 
         ** description **
         return a random cell, based on weights on their generate mod"""
+
         return random.choices(population=base_cells, weights=[i[1].value for i in base_cells], k=1)[0]
 
-    def get_probability_cell(self, probability_cells: list[typing.Tuple[CellType, GenerateMod]]) \
+    def get_probability_type_cell(self, probability_cells: list[typing.Tuple[CellType, GenerateMod]]) \
             -> typing.Union[None, typing.Tuple[CellType, GenerateMod]]:
         """** args **
         probability_cells  -  list of cells to choose one
@@ -239,7 +227,7 @@ class Map:
         return random.choices(population=probability_cells, weights=[i[1].value for i in probability_cells], k=1)[0]
 
     @staticmethod
-    def get_count_cell(count_cells: list[typing.Tuple[CellType, GenerateMod]]) \
+    def get_count_type_cell(count_cells: list[typing.Tuple[CellType, GenerateMod]]) \
             -> typing.Union[None, typing.Tuple[CellType, GenerateMod]]:
         """** args **
         count_cells  -  list of cells to choose one
@@ -252,6 +240,7 @@ class Map:
         if generate_mod.value <= 0 or generate_mod.type != GenerateModType.Count:
             return None
 
+        print('output')
         generate_mod.value = generate_mod.value - 1
         return new_count_cell_type, generate_mod
 
@@ -426,3 +415,15 @@ class Map:
         ** description **
         sets new draw start position"""
         self._draw_start = new_pos
+
+    @property
+    def cells(self):
+        return self._cells
+
+    @property
+    def width(self):
+        return self._width
+
+    @property
+    def height(self):
+        return self._height

@@ -26,8 +26,8 @@ class CellWithEnemySprite(pygame.sprite.Sprite):
         self.image = pygame.Surface((500, 500))
         self.image.fill(pygame.Color((255, 36, 0)))
         self.rect = self.image.get_rect()
-        pygame.draw.circle(self.image, pygame.Color((176, 0, 0)),
-                           (self.rect.width // 2 - 10, self.rect.height // 2 - 10), 200)
+        pygame.draw.rect(self.image, pygame.Color((176, 0, 0)),
+                         (self.rect.x + 25, self.rect.y + 25, self.rect.width - 100, self.rect.height - 100))
 
 
 class CellWithNPCSprite(pygame.sprite.Sprite):
