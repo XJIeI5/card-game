@@ -22,6 +22,18 @@ def get_cells_with_same_generate_mod(cell_dict: typing.Dict[CellType, GenerateMo
     return [(key, value) for key, value in cell_dict.items() if value.type == condition]
 
 
+def check_neighbour(board: list, col_index: int, row_index: int):
+    """** args **
+    board  -  the board on which the search will be performed
+    row_index  -  the row index of the element around which the search will take place
+    col_index  -  the col index of the element around which the search will take place
+
+    ** description **
+    return True if col_index and row_index within the board sizes"""
+
+    return True if 0 <= col_index < len(board[0]) and 0 <= row_index < len(board) else False
+
+
 class Map:
     def __init__(self, width: int, height: int, fill: CellType):
         """** args **
@@ -57,16 +69,20 @@ class Map:
 
          ** description **
          reads the file and sets the cells attribute value based on it"""
-
+        self._cells = []
         with open(file, mode='r', encoding='utf-8') as file:
             lines = file.readlines()
+            self._height = len(lines)
+            self._width = len(lines[0])
             for line_index, line in enumerate(lines):
                 result = []
                 for symbol_index, symbol in enumerate(line):
+                    if self._width < symbol_index:
+                        self._width = symbol_index
                     if symbol == '\n':
                         continue
                     result.append(Cell(line_index, symbol_index, cell_dict[symbol]))
-                self._cells[line_index] = result
+                self._cells.append(result)
 
     def fill_map(self):
         """** description **
@@ -93,7 +109,7 @@ class Map:
         self.place_probability_type_cells(probability_cells, placed_cell_indexes)
         self.place_count_type_cells(count_cells, base_cells, placed_cell_indexes)
 
-    def place_base_type_cells(self, base_cells: list[typing.Tuple[CellType, GenerateMod]])\
+    def place_base_type_cells(self, base_cells: list[typing.Tuple[CellType, GenerateMod]]) \
             -> list[typing.Tuple[int, int]]:
         """** args **
         base_cells  -  list of CellTypes and GenerateMod with GenerateMod.type == Base
@@ -203,7 +219,7 @@ class Map:
         return True if random_probability > self._basic_cell_appearance_threshold else False
 
     @staticmethod
-    def get_base_type_cell(base_cells: list[typing.Tuple[CellType, GenerateMod]])\
+    def get_base_type_cell(base_cells: list[typing.Tuple[CellType, GenerateMod]]) \
             -> typing.Tuple[CellType, GenerateMod]:
         """** args **
         base_cells  -  list of cells to choose one
@@ -356,7 +372,7 @@ class Map:
                 else:
                     copy_coordinates.remove(cell_coord)
                     connected_cells_coords = [(cell.x, cell.y) for cell in connected_cells]
-                    neighbor_cells = self.get_neighbors(self._cells, *cell_coord, (1, 1))
+                    neighbor_cells = self.get_neighbors(self._cells, cell_coord[1], cell_coord[0], (1, 1))
                     copy_coordinates.extend([(cell.x, cell.y) for cell in neighbor_cells if cell.type != self._fill and
                                              (cell.x, cell.y) not in connected_cells_coords])
                     copy_coordinates = list(set(copy_coordinates))
@@ -366,7 +382,7 @@ class Map:
         return connected_cells
 
     @staticmethod
-    def get_neighbors(board: list, row_index: int, col_index: int, search_radius: typing.Tuple[int, int]):
+    def get_neighbors(board: list, col_index: int, row_index: int, search_radius: typing.Tuple[int, int]):
         """** args **
         board  -  the board on which the search will be performed
         row_index  -  the row index of the element around which the search will take place
@@ -376,18 +392,14 @@ class Map:
         ** description **
         return a list of values, searched in search_radius on board"""
 
-        neighbors = []
+        ways = []
         for i in range(-search_radius[0], search_radius[0] + 1, 1):
-            for j in range(-search_radius[1], search_radius[1] + 1, 1):
+            for j in range(-search_radius[0], search_radius[1] + 1, 1):
                 if i == 0 and j == 0:
                     continue
-                neighbor_row, neighbor_col = row_index + i, col_index + j
-                if neighbor_row < 0 or neighbor_col < 0:
-                    continue
-                if neighbor_row >= len(board) or neighbor_col >= len(board[0]):
-                    continue
-                neighbors.append(board[neighbor_row][neighbor_col])
-        return neighbors
+                ways.append((i, j))
+        return [board[row_index + dy][col_index + dx]
+                for dx, dy in ways if check_neighbour(board, col_index + dx, row_index + dy)]
 
     def draw(self, screen: pygame.Surface, rect: pygame.Rect) -> None:
         """** args **

@@ -4,7 +4,7 @@ import sys
 from source.map import Map
 from source.cell import CellType
 from source.generate_mod import GenerateMod, GenerateModType
-from source.triangulation import get_lines_from_triangulation
+from source.player_on_map import PlayerOnMap
 
 
 def main():
@@ -16,10 +16,14 @@ def main():
     fps = 60
 
     game_map = Map(50, 50, None)
-    # game_map.load_from_txt('./source/data/map_test.txt', {' ': CellType.NoneCell, '#': CellType.EmptyCell})
-    game_map.generate_map({CellType.EmptyCell: GenerateMod(GenerateModType.Base, 1),
-                           CellType.CellWithNPC: GenerateMod(GenerateModType.Count, 3),
-                           CellType.CellWithEnemy: GenerateMod(GenerateModType.Probability, 50)})
+    game_map.load_from_txt('./source/data/map_test.txt', {' ': None, '#': CellType.EmptyCell})
+    # game_map.generate_map({CellType.EmptyCell: GenerateMod(GenerateModType.Base, 1),
+    #                        CellType.CellWithNPC: GenerateMod(GenerateModType.Count, 3),
+    #                        CellType.CellWithEnemy: GenerateMod(GenerateModType.Probability, 50)})
+    player_start = (0, 0)
+    player_end = (2, 0)
+    player_on_map = PlayerOnMap(player_start, game_map)
+    print(*player_on_map.find_path(player_end), sep='\n')
     map_pos = [0, 0]
     game_map.move((0, 0))
 
