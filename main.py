@@ -2,6 +2,7 @@ import pygame
 import sys
 
 from source.game_map import GameMap
+from source.player_view_map import PlayerViewMap
 from source.cell import CellModifierType
 from source.generate_mod import GenerateMod, GenerateModType
 
@@ -14,12 +15,13 @@ def main():
     screen.fill(pygame.Color('black'))
     fps = 1
 
-    game_map = GameMap(pygame.Rect((50, 50, width - 100, height - 100)), None)
+    game_map = PlayerViewMap(pygame.Rect((50, 50, width - 100, height - 100)), None)
     # game_map.load_from_txt('./source/data/map_test.txt', {' ': None, '#': CellModifierType.EmptyCell})
     cell_dict = {CellModifierType.EmptyCell: GenerateMod(GenerateModType.Base, 1),
                  CellModifierType.EnemyCell: GenerateMod(GenerateModType.Count, 1)}
     game_map.generate_map((50, 50), cell_dict)
-    # print(*game_map.cells, sep='\n', end='\n\n')
+    game_map.init_player()
+    # print(game_map._player_position)
     map_pos = [0, 0]
 
     while True:
@@ -39,8 +41,6 @@ def main():
         if state[pygame.K_d]:
             map_pos[0] -= 1
         game_map.move(map_pos)
-        # game_map.move_entities()
-        # print(*game_map.cells, sep='\n', end='\n\n')
         screen.fill(pygame.Color('black'))
         game_map.draw(screen)
         clock.tick(fps)

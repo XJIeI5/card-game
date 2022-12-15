@@ -1,3 +1,4 @@
+import math
 import random
 import typing
 
@@ -338,6 +339,7 @@ class GameMap:
             error -= es
             if error < 0:
                 error += el
+                points.append([x + pdx, y + pdy])
                 x += sign_x
                 y += sign_y
             else:
@@ -449,22 +451,6 @@ class GameMap:
                 self._cells[cell[0]][cell[1]].modifier is not None:
             return cell
         return None
-
-    def move_entities(self):
-        new_entity_cells = []
-        for cell in self._entity_cells:
-            for entity in cell.entities:
-                entity.update()
-
-                old_pos = entity.position
-                print(entity._path)
-                entity.get_next_pos()
-                new_pos = entity.position
-
-                self._cells[old_pos[1]][old_pos[0]].entities.remove(entity)
-                self._cells[new_pos[1]][new_pos[0]].entities.append(entity)
-                new_entity_cells.append(self._cells[new_pos[0]][new_pos[1]])
-        self._entity_cells = new_entity_cells
 
     @property
     def cells(self):
