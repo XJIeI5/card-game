@@ -1,19 +1,20 @@
 import pygame.surface
 from enum import Enum
 from source.data.sprites import primitives
+# from source.entity import Entity
 
 
-class CellType(Enum):
+class CellModifierType(Enum):
     EmptyCell = primitives.EmptyCellSprite()
-    CellWithEnemy = primitives.CellWithEnemySprite()
-    CellWithNPC = primitives.CellWithNPCSprite()
+    EnemyCell = primitives.EnemyCellSprite()
+    NPCCell = primitives.NPCCellSprite()
 
 
 class Cell:
-    def __init__(self, x: int, y: int, type: CellType):
+    def __init__(self, x: int, y: int, mod_type: CellModifierType):
         self._x = x
         self._y = y
-        self._type = type
+        self._modifier_type = mod_type
 
     @property
     def x(self):
@@ -24,8 +25,8 @@ class Cell:
         return self._y
 
     @property
-    def type(self):
-        return self._type
+    def modifier(self):
+        return self._modifier_type
 
     def draw(self, screen: pygame.surface.Surface, rect: pygame.Rect):
         """ ** args **
@@ -35,10 +36,10 @@ class Cell:
         ** description **
         draws a cell"""
 
-        if not self._type:
+        if not self._modifier_type:
             return
-        sprite_image = pygame.transform.scale(self._type.value.image, (rect.width, rect.height))
+        sprite_image = pygame.transform.scale(self._modifier_type.value.image, (rect.width, rect.height))
         screen.blit(sprite_image, (rect.x, rect.y))
 
     def __repr__(self):
-        return f'{self._type} Cell: {self._y}, {self._x}'
+        return f'Mod: {self._modifier_type} in Cell at: {self._y}, {self._x}'

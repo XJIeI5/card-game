@@ -5,12 +5,12 @@ import pygame
 
 from source.generate_mod import GenerateMod, GenerateModType
 from source.simplex_noise import Noise
-from source.cell import Cell, CellType
+from source.cell import Cell, CellModifierType
 from source.triangulation import get_lines_from_triangulation
 
 
-def get_cells_with_same_generate_mod(cell_dict: typing.Dict[CellType, GenerateMod], condition: GenerateModType) \
-        -> list[typing.Tuple[CellType, GenerateMod]]:
+def get_cells_with_same_generate_mod(cell_dict: typing.Dict[CellModifierType, GenerateMod], condition: GenerateModType) \
+        -> list[typing.Tuple[CellModifierType, GenerateMod]]:
     """** args **
     cell_dict  -  dictionary with all types of cells
     condition  -  searchable generate mod type
@@ -31,22 +31,24 @@ def check_neighbour(board: list, col_index: int, row_index: int):
     ** description **
     return True if col_index and row_index within the board sizes"""
 
-    return True if 0 <= col_index < len(board[0]) and 0 <= row_index < len(board) else False
+    is_within_borders = 0 <= col_index < len(board[0]) and 0 <= row_index < len(board)
+    # is_cell_not_none = board[col_index][row_index].modifier is not None
+    return is_within_borders
 
 
-class Map:
-    def __init__(self, width: int, height: int, fill: CellType):
+class GameMap:
+    def __init__(self, rect: pygame.rect.Rect, fill: CellModifierType):
         """** args **
-        width  -  width of the map
-        height  -  height of the map
+        rect  -  rect in which the map will be drawn
         fill  -  default cell type"""
 
         # size
-        self._width: int = width
-        self._height: int = height
+        self._width: int = 0
+        self._height: int = 0
         # contains all cells on map
         self._fill = fill
         self._cells = []
+        self._entity_cells = []
         self.fill_map()
         # visualize params
         self._cell_width: int = 8
@@ -55,6 +57,7 @@ class Map:
         self._vertical_distance_between_cells: int = 2
         # the beginning from which to draw the map
         self._draw_start: tuple = (0, 0)
+        self._draw_rect = rect
         # generate map params
         self._noise = Noise()
         self._scale: float = 0.08  # de-facto, it affects how chaotic the map will be
@@ -62,7 +65,7 @@ class Map:
         self._general_chance_to_appear_probability_cell: float = 0.03
         self._general_chance_to_appear_count_cell: float = 0.03
 
-    def load_from_txt(self, file: str, cell_dict: typing.Dict[str, CellType]) -> None:
+    def load_from_txt(self, file: str, cell_dict: typing.Dict[str, CellModifierType]) -> None:
         """** args **
         file  -  path to .txt file on which the map will be built
         cell_dict  -  which characters in the .txt file are responsible for which types of cells
@@ -86,16 +89,19 @@ class Map:
 
     def fill_map(self):
         """** description **
-        recreates the self._cells from the Cell.type = self._fill"""
-        self._cells = [[Cell(i, j, self._fill) for j in range(self._height)] for i in range(self._width)]
+        recreates the self._cells from the Cell.modifier = self._fill"""
+        self._cells = [[Cell(j, i, self._fill) for j in range(self._height)] for i in range(self._width)]
 
-    def generate_map(self, cell_dict: typing.Dict[CellType, GenerateMod]):
+    def generate_map(self, size: typing.Tuple[int, int],
+                     cell_dict: typing.Dict[CellModifierType, GenerateMod]) -> None:
         """** args **
         size  -  sets the size of the generated map
         cell_dict  -  specifies which cell type corresponds to which location
 
         ** description **
         randomly generates a map of specified sizes with cells of a specific type arranged according to certain rules"""
+
+        self._width, self._height = size
 
         base_cells = get_cells_with_same_generate_mod(cell_dict, GenerateModType.Base)
         probability_cells = get_cells_with_same_generate_mod(cell_dict, GenerateModType.Probability)
@@ -109,7 +115,7 @@ class Map:
         self.place_probability_type_cells(probability_cells, placed_cell_indexes)
         self.place_count_type_cells(count_cells, base_cells, placed_cell_indexes)
 
-    def place_base_type_cells(self, base_cells: list[typing.Tuple[CellType, GenerateMod]]) \
+    def place_base_type_cells(self, base_cells: list[typing.Tuple[CellModifierType, GenerateMod]]) \
             -> list[typing.Tuple[int, int]]:
         """** args **
         base_cells  -  list of CellTypes and GenerateMod with GenerateMod.type == Base
@@ -127,12 +133,12 @@ class Map:
                 new_cell_couple = (None, GenerateMod(GenerateModType.Base, 1))
                 if base_cells:
                     new_cell_couple = self.get_base_type_cell(base_cells)
-
-                self._cells[array_index][element_index] = Cell(array_index, element_index, new_cell_couple[0])
+                self._cells[array_index][element_index] = \
+                    Cell(array_index, element_index, new_cell_couple[0])
                 base_cells_placed_cell_indexes.append((array_index, element_index))
         return base_cells_placed_cell_indexes
 
-    def place_bridge_cells(self, base_cells: list[typing.Tuple[CellType, GenerateMod]]) \
+    def place_bridge_cells(self, base_cells: list[typing.Tuple[CellModifierType, GenerateMod]]) \
             -> list[typing.Tuple[int, int]]:
         """** args **
         base_cells  - list of CellTypes and GenerateMod with GenerateMod.type == Base
@@ -147,11 +153,12 @@ class Map:
             new_cell_couple = (None, GenerateMod(GenerateModType.Base, 1))
             if base_cells:
                 new_cell_couple = self.get_base_type_cell(base_cells)
-            self._cells[array_index][element_index] = Cell(array_index, element_index, new_cell_couple[0])
+            self._cells[array_index][element_index] = \
+                Cell(array_index, element_index, new_cell_couple[0])
             bridge_cells_placed_cell_indexes.append((array_index, element_index))
         return bridge_cells_placed_cell_indexes
 
-    def place_probability_type_cells(self, probability_cells: list[typing.Tuple[CellType, GenerateMod]],
+    def place_probability_type_cells(self, probability_cells: list[typing.Tuple[CellModifierType, GenerateMod]],
                                      placed_cell_indexes: list[typing.Tuple[int, int]]) -> list[typing.Tuple[int, int]]:
         """** args **
         probability_cells  -  list of CellTypes and GenerateMod with GenerateMod.type == Probability
@@ -164,18 +171,19 @@ class Map:
         probability_cells_placed_cell_indexes = []
         for cell_index in placed_cell_indexes:
             array_index, element_index = cell_index
-            new_cell_couple = (CellType.EmptyCell, GenerateMod(GenerateModType.Base, 1))
+            new_cell_couple = (CellModifierType.EmptyCell, GenerateMod(GenerateModType.Base, 1))
             if not probability_cells:
                 break
             new_probability_cell_couple = self.get_probability_type_cell(probability_cells)
             if new_probability_cell_couple is not None:
                 new_cell_couple = new_probability_cell_couple
-            self._cells[array_index][element_index] = Cell(array_index, element_index, new_cell_couple[0])
+            new_cell = Cell(array_index, element_index, new_cell_couple[0])
+            self._cells[array_index][element_index] = new_cell
             probability_cells_placed_cell_indexes.append((array_index, element_index))
         return probability_cells_placed_cell_indexes
 
-    def place_count_type_cells(self, count_cells: list[typing.Tuple[CellType, GenerateMod]],
-                               base_cells: list[typing.Tuple[CellType, GenerateMod]],
+    def place_count_type_cells(self, count_cells: list[typing.Tuple[CellModifierType, GenerateMod]],
+                               base_cells: list[typing.Tuple[CellModifierType, GenerateMod]],
                                placed_cell_indexes: list[typing.Tuple[int, int]]) -> list[typing.Tuple[int, int]]:
         """** args **
         count_cells  -  list of CellTypes and GenerateMod with GenerateMod.type == Count
@@ -186,7 +194,7 @@ class Map:
         places count type cells on the map on base type cells and returns the coordinates to which they were placed"""
 
         count_cells_placed_cell_indexes = []
-        base_cell_types: list[CellType] = [i[0] for i in base_cells]
+        base_cell_types: list[CellModifierType] = [i[0] for i in base_cells]
         count_cell_amount = sum([i[1].value for i in count_cells])
         print(count_cell_amount)
         try:
@@ -195,18 +203,19 @@ class Map:
             return []
         while count_cell_amount > 0:
             count_cell_amount -= 1
-            new_count_cell_couple = self.get_count_type_cell(count_cells)
-            current_count_cell_place_index = count_cell_place_indexes[count_cell_amount - 1]
+            new_cell_couple = self.get_count_type_cell(count_cells)
+            current_count_cell_place_index = count_cell_place_indexes[count_cell_amount]
             array_index, element_index = current_count_cell_place_index
-            if new_count_cell_couple is None:
+            if new_cell_couple is None:
                 continue
-            if self._cells[array_index][element_index].type \
+            if self._cells[array_index][element_index].modifier \
                     not in base_cell_types:
-                count_cell_place_indexes = random.sample(placed_cell_indexes, count_cell_amount)
+                count_cell_place_indexes = random.sample(placed_cell_indexes, count_cell_amount + 1)
                 continue
-            self._cells[array_index][element_index] = \
-                Cell(array_index, element_index, new_count_cell_couple[0])
+            new_cell = Cell(array_index, element_index, new_cell_couple[0])
+            self._cells[array_index][element_index] = new_cell
             count_cells_placed_cell_indexes.append(current_count_cell_place_index)
+            count_cells.remove(new_cell_couple)
         return count_cells_placed_cell_indexes
 
     def is_cell_placed(self, random_probability: float) -> bool:
@@ -219,8 +228,8 @@ class Map:
         return True if random_probability > self._basic_cell_appearance_threshold else False
 
     @staticmethod
-    def get_base_type_cell(base_cells: list[typing.Tuple[CellType, GenerateMod]]) \
-            -> typing.Tuple[CellType, GenerateMod]:
+    def get_base_type_cell(base_cells: list[typing.Tuple[CellModifierType, GenerateMod]]) \
+            -> typing.Tuple[CellModifierType, GenerateMod]:
         """** args **
         base_cells  -  list of cells to choose one
 
@@ -229,8 +238,8 @@ class Map:
 
         return random.choices(population=base_cells, weights=[i[1].value for i in base_cells], k=1)[0]
 
-    def get_probability_type_cell(self, probability_cells: list[typing.Tuple[CellType, GenerateMod]]) \
-            -> typing.Union[None, typing.Tuple[CellType, GenerateMod]]:
+    def get_probability_type_cell(self, probability_cells: list[typing.Tuple[CellModifierType, GenerateMod]]) \
+            -> typing.Union[None, typing.Tuple[CellModifierType, GenerateMod]]:
         """** args **
         probability_cells  -  list of cells to choose one
 
@@ -243,11 +252,11 @@ class Map:
         return random.choices(population=probability_cells, weights=[i[1].value for i in probability_cells], k=1)[0]
 
     @staticmethod
-    def get_count_type_cell(count_cells: list[typing.Tuple[CellType, GenerateMod]]) \
-            -> typing.Union[None, typing.Tuple[CellType, GenerateMod]]:
+    def get_count_type_cell(count_cells: list[typing.Tuple[CellModifierType, GenerateMod]]) \
+            -> typing.Union[None, typing.Tuple[CellModifierType, GenerateMod]]:
         """** args **
         count_cells  -  list of cells to choose one
-        
+
         ** description **
         return a random cell or None, based on weights on their generate mod,
          self._general_chance_to_appear_count_cell and value of generate mod"""
@@ -256,7 +265,6 @@ class Map:
         if generate_mod.value <= 0 or generate_mod.type != GenerateModType.Count:
             return None
 
-        print('output')
         generate_mod.value = generate_mod.value - 1
         return new_count_cell_type, generate_mod
 
@@ -272,7 +280,7 @@ class Map:
         for line_index in range(len(lines) - 1):
             line_points = self.bresenham_algorithm(lines[line_index], lines[line_index + 1])
             for point in line_points[1:]:
-                if self._cells[point[0]][point[1]].type != self._fill:
+                if self._cells[point[0]][point[1]].modifier != self._fill:
                     break
                 result.append(point)
         return result
@@ -346,7 +354,7 @@ class Map:
         islands = []
         for row_index, row in enumerate(self._cells):
             for cell_index, cell in enumerate(row):
-                if cell.type == self._fill:
+                if cell.modifier == self._fill:
                     continue
                 if any([cell in i for i in islands]):
                     continue
@@ -373,8 +381,8 @@ class Map:
                     copy_coordinates.remove(cell_coord)
                     connected_cells_coords = [(cell.x, cell.y) for cell in connected_cells]
                     neighbor_cells = self.get_neighbors(self._cells, cell_coord[1], cell_coord[0], (1, 1))
-                    copy_coordinates.extend([(cell.x, cell.y) for cell in neighbor_cells if cell.type != self._fill and
-                                             (cell.x, cell.y) not in connected_cells_coords])
+                    copy_coordinates.extend([(cell.x, cell.y) for cell in neighbor_cells if cell.modifier != self._fill
+                                             and (cell.x, cell.y) not in connected_cells_coords])
                     copy_coordinates = list(set(copy_coordinates))
                 if self._cells[cell_coord_row][cell_coord_col] not in connected_cells:
                     connected_cells.append(self._cells[cell_coord_row][cell_coord_col])
@@ -401,7 +409,7 @@ class Map:
         return [board[row_index + dy][col_index + dx]
                 for dx, dy in ways if check_neighbour(board, col_index + dx, row_index + dy)]
 
-    def draw(self, screen: pygame.Surface, rect: pygame.Rect) -> None:
+    def draw(self, screen: pygame.Surface) -> None:
         """** args **
         screen  -  the surface on which the map will be drawn
         rect  -  the rectangle in which the map should be inscribed
@@ -409,7 +417,7 @@ class Map:
         ** description **
         draws a map"""
 
-        surface = pygame.Surface((rect.width, rect.height))
+        surface = pygame.Surface((self._draw_rect.width, self._draw_rect.height))
         for row_index in range(len(self._cells)):
             for col_index in range(len(self._cells[row_index])):
                 cell_rect = pygame.Rect((self._draw_start[0] + col_index *
@@ -418,7 +426,7 @@ class Map:
                                          (self._cell_height + self._vertical_distance_between_cells),
                                          self._cell_width, self._cell_height))
                 self._cells[row_index][col_index].draw(surface, cell_rect)
-        screen.blit(surface, (rect.x, rect.y))
+        screen.blit(surface, (self._draw_rect.x, self._draw_rect.y))
 
     def move(self, new_pos: typing.Tuple[int, int]) -> None:
         """** args **
@@ -427,6 +435,36 @@ class Map:
         ** description **
         sets new draw start position"""
         self._draw_start = new_pos
+
+    def get_cell(self, mouse_pos: typing.Tuple[int, int]) -> typing.Union[None, typing.Tuple[int, int]]:
+        """** args **
+        mouse_pos  -  mouse screen position
+
+        ** description **
+        returns the coordinates of the clicked cell"""
+
+        cell = (mouse_pos[1] - self._draw_rect.y) // (self._cell_height + self._vertical_distance_between_cells), \
+               (mouse_pos[0] - self._draw_rect.x) // (self._cell_width + self._horizontal_distance_between_cells)
+        if 0 <= cell[1] < self._width and 0 <= cell[0] < self._height and \
+                self._cells[cell[0]][cell[1]].modifier is not None:
+            return cell
+        return None
+
+    def move_entities(self):
+        new_entity_cells = []
+        for cell in self._entity_cells:
+            for entity in cell.entities:
+                entity.update()
+
+                old_pos = entity.position
+                print(entity._path)
+                entity.get_next_pos()
+                new_pos = entity.position
+
+                self._cells[old_pos[1]][old_pos[0]].entities.remove(entity)
+                self._cells[new_pos[1]][new_pos[0]].entities.append(entity)
+                new_entity_cells.append(self._cells[new_pos[0]][new_pos[1]])
+        self._entity_cells = new_entity_cells
 
     @property
     def cells(self):

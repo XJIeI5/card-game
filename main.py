@@ -1,10 +1,9 @@
 import pygame
 import sys
 
-from source.map import Map
-from source.cell import CellType
+from source.game_map import GameMap
+from source.cell import CellModifierType
 from source.generate_mod import GenerateMod, GenerateModType
-from source.player_on_map import PlayerOnMap
 
 
 def main():
@@ -13,24 +12,23 @@ def main():
     screen = pygame.display.set_mode(size)
     clock = pygame.time.Clock()
     screen.fill(pygame.Color('black'))
-    fps = 60
+    fps = 1
 
-    game_map = Map(50, 50, None)
-    game_map.load_from_txt('./source/data/map_test.txt', {' ': None, '#': CellType.EmptyCell})
-    # game_map.generate_map({CellType.EmptyCell: GenerateMod(GenerateModType.Base, 1),
-    #                        CellType.CellWithNPC: GenerateMod(GenerateModType.Count, 3),
-    #                        CellType.CellWithEnemy: GenerateMod(GenerateModType.Probability, 50)})
-    player_start = (0, 0)
-    player_end = (2, 0)
-    player_on_map = PlayerOnMap(player_start, game_map)
-    print(*player_on_map.find_path(player_end), sep='\n')
+    game_map = GameMap(pygame.Rect((50, 50, width - 100, height - 100)), None)
+    # game_map.load_from_txt('./source/data/map_test.txt', {' ': None, '#': CellModifierType.EmptyCell})
+    cell_dict = {CellModifierType.EmptyCell: GenerateMod(GenerateModType.Base, 1),
+                 CellModifierType.EnemyCell: GenerateMod(GenerateModType.Count, 1)}
+    game_map.generate_map((50, 50), cell_dict)
+    # print(*game_map.cells, sep='\n', end='\n\n')
     map_pos = [0, 0]
-    game_map.move((0, 0))
 
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                # player_on_map.set_path(game_map.get_cell(event.pos))
+                pass
         state = pygame.key.get_pressed()
         if state[pygame.K_w]:
             map_pos[1] += 1
@@ -41,8 +39,10 @@ def main():
         if state[pygame.K_d]:
             map_pos[0] -= 1
         game_map.move(map_pos)
+        # game_map.move_entities()
+        # print(*game_map.cells, sep='\n', end='\n\n')
         screen.fill(pygame.Color('black'))
-        game_map.draw(screen, pygame.Rect((50, 50, width - 100, height - 100)))
+        game_map.draw(screen)
         clock.tick(fps)
         pygame.display.flip()
 
