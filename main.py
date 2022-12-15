@@ -13,7 +13,7 @@ def main():
     screen = pygame.display.set_mode(size)
     clock = pygame.time.Clock()
     screen.fill(pygame.Color('black'))
-    fps = 1
+    fps = 100
 
     game_map = PlayerViewMap(pygame.Rect((50, 50, width - 100, height - 100)), None)
     # game_map.load_from_txt('./source/data/map_test.txt', {' ': None, '#': CellModifierType.EmptyCell})
@@ -22,7 +22,6 @@ def main():
     game_map.generate_map((50, 50), cell_dict)
     game_map.init_player()
     # print(game_map._player_position)
-    map_pos = [0, 0]
 
     while True:
         for event in pygame.event.get():
@@ -33,14 +32,13 @@ def main():
                 pass
         state = pygame.key.get_pressed()
         if state[pygame.K_w]:
-            map_pos[1] += 1
+            game_map.move((0, 1))
         if state[pygame.K_s]:
-            map_pos[1] -= 1
+            game_map.move((0, -1))
         if state[pygame.K_a]:
-            map_pos[0] += 1
+            game_map.move((1, 0))
         if state[pygame.K_d]:
-            map_pos[0] -= 1
-        game_map.move(map_pos)
+            game_map.move((-1, 0))
         screen.fill(pygame.Color('black'))
         game_map.draw(screen)
         clock.tick(fps)

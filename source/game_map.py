@@ -430,13 +430,13 @@ class GameMap:
                 self._cells[row_index][col_index].draw(surface, cell_rect)
         screen.blit(surface, (self._draw_rect.x, self._draw_rect.y))
 
-    def move(self, new_pos: typing.Tuple[int, int]) -> None:
+    def move(self, offset: typing.Tuple[int, int]) -> None:
         """** args **
         new_pos  -  new draw start position
 
         ** description **
         sets new draw start position"""
-        self._draw_start = new_pos
+        self._draw_start = self._draw_start[0] + offset[0], self._draw_start[1] + offset[1]
 
     def get_cell(self, mouse_pos: typing.Tuple[int, int]) -> typing.Union[None, typing.Tuple[int, int]]:
         """** args **
