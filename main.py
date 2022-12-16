@@ -13,7 +13,7 @@ def main():
     screen = pygame.display.set_mode(size)
     clock = pygame.time.Clock()
     screen.fill(pygame.Color('black'))
-    fps = 100
+    fps = 60
 
     game_map = PlayerViewMap(pygame.Rect((50, 50, width - 100, height - 100)), None)
     # game_map.load_from_txt('./source/data/map_test.txt', {' ': None, '#': CellModifierType.EmptyCell})

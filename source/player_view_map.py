@@ -16,6 +16,7 @@ class PlayerViewMap(GameMap):
         super(PlayerViewMap, self).__init__(rect, fill)
         self._player_position: typing.Tuple[int, int] = None
         self._opened_cells: list[list[Cell]] = []
+        self._game_map_image: pygame.Surface = pygame.Surface((self._draw_rect.width, self._draw_rect.height))
 
     def generate_map(self, size: typing.Tuple[int, int],
                      cell_dict: typing.Dict[CellModifierType, GenerateMod]) -> None:
@@ -28,20 +29,21 @@ class PlayerViewMap(GameMap):
         surface = pygame.Surface((self._draw_rect.width, self._draw_rect.height))
         for row_index in range(len(self._cells)):
             for col_index in range(len(self._cells[row_index])):
+                if self._cells[row_index][col_index].modifier is None:
+                    continue
                 if self._opened_cells[row_index][col_index][0] == -1:
                     continue
-
                 cell_rect = pygame.Rect((self._draw_start[0] + col_index *
                                          (self._cell_width + self._horizontal_distance_between_cells),
                                          self._draw_start[1] + row_index *
                                          (self._cell_height + self._vertical_distance_between_cells),
                                          self._cell_width, self._cell_height))
-
-                if self._opened_cells[row_index][col_index][0] == 0:
-                    draw_cell(surface, cell_rect, UnopenedCellSprite())
                 self._cells[row_index][col_index].draw(surface, cell_rect)
-                if [col_index, row_index] == self._player_position:
-                    draw_cell(surface, cell_rect, PlayerCellSprite())
+        draw_cell(surface, pygame.Rect((self._draw_start[0] + self._player_position[0] *
+                                         (self._cell_width + self._horizontal_distance_between_cells),
+                                         self._draw_start[1] + self._player_position[1] *
+                                         (self._cell_height + self._vertical_distance_between_cells),
+                                         self._cell_width, self._cell_height)), PlayerCellSprite())
         screen.blit(surface, (self._draw_rect.x, self._draw_rect.y))
 
     def init_player(self) -> None:
@@ -69,10 +71,7 @@ class PlayerViewMap(GameMap):
             self._player_position[1] -= offset[1]
         self.update_opened_cells()
 
-    def update_opened_cells(self):
-        far = self.get_neighbors(self._opened_cells, *self._player_position, [3, 3])
+    def update_opened_cells(self) -> None:
+        far = self.get_neighbors(self._opened_cells, *self._player_position, [2, 2])
         for value, coords in far:
             self._opened_cells[coords[1]][coords[0]] = (0, coords)
-        closely = self.get_neighbors(self._opened_cells, *self._player_position, [1, 1])
-        for value, coords in closely:
-            self._opened_cells[coords[1]][coords[0]] = (1, coords)
