@@ -382,7 +382,7 @@ class GameMap:
                 else:
                     copy_coordinates.remove(cell_coord)
                     connected_cells_coords = [(cell.x, cell.y) for cell in connected_cells]
-                    neighbor_cells = self.get_neighbors(self._cells, cell_coord[1], cell_coord[0], (1, 1))
+                    neighbor_cells = self.get_neighbors(self._cells, cell_coord[1], cell_coord[0], (1, 1), True)
                     copy_coordinates.extend([(cell.x, cell.y) for cell in neighbor_cells if cell.modifier != self._fill
                                              and (cell.x, cell.y) not in connected_cells_coords])
                     copy_coordinates = list(set(copy_coordinates))
@@ -392,7 +392,8 @@ class GameMap:
         return connected_cells
 
     @staticmethod
-    def get_neighbors(board: list, col_index: int, row_index: int, search_radius: typing.Tuple[int, int]):
+    def get_neighbors(board: list, col_index: int, row_index: int, search_radius: typing.Tuple[int, int],
+                      consider_verticals: bool = True):
         """** args **
         board  -  the board on which the search will be performed
         row_index  -  the row index of the element around which the search will take place
@@ -406,6 +407,8 @@ class GameMap:
         for i in range(-search_radius[0], search_radius[0] + 1, 1):
             for j in range(-search_radius[0], search_radius[1] + 1, 1):
                 if i == 0 and j == 0:
+                    continue
+                if not consider_verticals and (i != 0 or j != 0):
                     continue
                 ways.append((i, j))
         return [board[row_index + dy][col_index + dx]

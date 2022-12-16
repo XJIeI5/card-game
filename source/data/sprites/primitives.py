@@ -15,7 +15,7 @@ class EmptyCellSprite(pygame.sprite.Sprite):
     def __init__(self):
         super(EmptyCellSprite, self).__init__()
         self.image = pygame.Surface((500, 500))
-        self.image.fill(pygame.Color(162, 162, 208))
+        self.image.fill(pygame.Color((162, 162, 208)))
         self.rect = self.image.get_rect()
 
 
@@ -45,4 +45,14 @@ class NPCCellSprite(pygame.sprite.Sprite):
         super(NPCCellSprite, self).__init__()
         self.image = pygame.Surface((500, 500))
         self.image.fill(pygame.Color('blue'))
+        self.rect = self.image.get_rect()
+
+
+class UnopenedCellSprite(pygame.sprite.Sprite):
+    def __init__(self):
+        super(UnopenedCellSprite, self).__init__()
+        self.image = pygame.Surface((500, 500))
+        self.rect = self.image.get_rect()
+        pygame.draw.rect(self.image, pygame.Color((162, 162, 208)),
+                         (self.rect.x + 75, self.rect.y + 75, self.rect.width - 175, self.rect.height - 175))
         self.rect = self.image.get_rect()

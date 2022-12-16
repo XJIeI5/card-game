@@ -20,16 +20,20 @@ def main():
     cell_dict = {CellModifierType.EmptyCell: GenerateMod(GenerateModType.Base, 1),
                  CellModifierType.EnemyCell: GenerateMod(GenerateModType.Count, 1)}
     game_map.generate_map((50, 50), cell_dict)
-    game_map.init_player()
     # print(game_map._player_position)
 
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                # player_on_map.set_path(game_map.get_cell(event.pos))
-                pass
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
+                game_map.move_player((-1, 0))
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
+                game_map.move_player((1, 0))
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
+                game_map.move_player((0, 1))
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
+                game_map.move_player((0, -1))
         state = pygame.key.get_pressed()
         if state[pygame.K_w]:
             game_map.move((0, 1))
