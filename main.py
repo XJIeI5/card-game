@@ -16,11 +16,11 @@ def main():
     fps = 60
 
     game_map = PlayerViewMap(pygame.Rect((50, 50, width - 100, height - 100)), None)
-    # game_map.load_from_txt('./source/data/map_test.txt', {' ': None, '#': CellModifierType.EmptyCell})
+    # game_map.load_from_txt('./source/data/save_map.txt')
     cell_dict = {CellModifierType.EmptyCell: GenerateMod(GenerateModType.Base, 1),
                  CellModifierType.EnemyCell: GenerateMod(GenerateModType.Count, 1)}
-    game_map.generate_map((50, 50), cell_dict)
-    # print(game_map._player_position)
+    game_map.generate_map((15, 15), cell_dict)
+    game_map.save_to_txt('./source/data/save_map.txt')
 
     while True:
         for event in pygame.event.get():

@@ -66,13 +66,15 @@ class GameMap:
         self._general_chance_to_appear_probability_cell: float = 0.03
         self._general_chance_to_appear_count_cell: float = 0.03
 
-    def load_from_txt(self, file: str, cell_dict: typing.Dict[str, CellModifierType]) -> None:
+    def load_from_txt(self, file: str) -> None:
         """** args **
         file  -  path to .txt file on which the map will be built
         cell_dict  -  which characters in the .txt file are responsible for which types of cells
 
          ** description **
          reads the file and sets the cells attribute value based on it"""
+
+        cell_dict = {}
         self._cells = []
         with open(file, mode='r', encoding='utf-8') as file:
             lines = file.readlines()

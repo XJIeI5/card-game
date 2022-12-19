@@ -18,12 +18,50 @@ class PlayerViewMap(GameMap):
         self._opened_cells: list[list[Cell]] = []
         self._game_map_image: pygame.Surface = pygame.Surface((self._draw_rect.width, self._draw_rect.height))
 
+    def save_to_txt(self, file_name: str):
+        cell_dict = {None: ' ', CellModifierType.EmptyCell: '#', CellModifierType.EnemyCell: 'e'}
+        opened_dict = {-1: '-', 0: '+'}
+        with open(file_name, mode='w+', encoding='utf-8') as file:
+            for i in range(len(self._cells)):
+                for j in range(len(self._cells[0])):
+                    cell = cell_dict[self._cells[i][j].modifier]
+                    opened = opened_dict[self._opened_cells[i][j][0]]
+                    file.write(cell + opened)
+                file.write('\n')
+
+    def load_from_txt(self, file_name: str) -> None:
+        cell_dict = {' ': None, '#': CellModifierType.EmptyCell, 'e': CellModifierType.EnemyCell}
+        opened_dict = {'-': -1, '+': 0}
+        with open(file_name, mode='r', encoding='utf-8') as file:
+            lines = file.readlines()
+            self._height = len(lines)
+            self._width = len(lines[0])
+            for line_index in range(self._height):
+                result = []
+                opened_result = []
+                for symbol_index in range(0, self._width, 2):
+                    if self._width < symbol_index:
+                        self._width = symbol_index
+                    line = lines[line_index]
+                    symbol = line[symbol_index]
+                    if symbol == '\n':
+                        continue
+                    result.append(Cell(line_index, symbol_index // 2, cell_dict[symbol]))
+                    opened_result.append((opened_dict[line[symbol_index + 1]], (symbol_index // 2, line_index)))
+                self._cells.append(result)
+                self._opened_cells.append(opened_result)
+        self.init_player()
+        print(*self._cells, sep='\n', end='\n\n')
+        print(*self._opened_cells, sep='\n', end='\n\n')
+
     def generate_map(self, size: typing.Tuple[int, int],
                      cell_dict: typing.Dict[CellModifierType, GenerateMod]) -> None:
         super(PlayerViewMap, self).generate_map(size, cell_dict)
         self.init_player()
         self._opened_cells = [[(-1, (j, i)) for j in range(size[0])] for i in range(size[1])]
         self.update_opened_cells()
+        print(*self._cells, sep='\n', end='\n\n')
+        print(*self._opened_cells, sep='\n', end='\n\n')
 
     def draw(self, screen: pygame.Surface) -> None:
         surface = pygame.Surface((self._draw_rect.width, self._draw_rect.height))
