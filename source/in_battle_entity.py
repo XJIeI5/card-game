@@ -12,13 +12,14 @@ class HighlightType(Enum):
 
 class InBattleEntity(pygame.sprite.Sprite):
     def __init__(self, sprite: pygame.sprite.Sprite, name: str, max_hp: int, max_shields: int,
-                 initiative: int):
+                 attack: int, initiative: int):
         super(InBattleEntity, self).__init__()
         self._image = sprite.image
         self._name = name
         self.rect = sprite.rect
         self._highlight_type = HighlightType.Default
         # characteristics
+        self._attack = attack
         self._initiative = initiative
         self._strength = 0
         self._dexterity = 0
@@ -38,10 +39,17 @@ class InBattleEntity(pygame.sprite.Sprite):
 
     def apply_damage(self, damage: int):
         remaining_damage = damage - self._shields
-        self._shields -= damage
-        self._hp -= remaining_damage
+        if self._shields > 0:
+            self._shields -= damage
+        if remaining_damage > 0 and self._shields <= 0:
+            self._hp -= remaining_damage
         if self._hp <= 0:
             self._is_dead = True
+
+        if self._shields < 0:
+            self._shields = 0
+        if self._hp < 0:
+            self._hp = 0
 
     def apply_shield(self, shield: int):
         self._shields += shield
@@ -66,6 +74,10 @@ class InBattleEntity(pygame.sprite.Sprite):
         if len(self._good_stack) < 6:
             return self._good_stack[:len(self._good_stack)]
         return self._good_stack[:6]
+
+    @property
+    def attack(self):
+        return self._attack
 
     @property
     def initiative(self):
@@ -110,9 +122,18 @@ class InBattleEntity(pygame.sprite.Sprite):
         pygame.draw.rect(surface, pygame.Color('gray'), (0, 0, 50, 10))
         pygame.draw.rect(surface, pygame.Color('red'), (0, 0, 50 * (self._hp / self._max_hp) // 1, 10))
 
+        hp = pygame.font.Font(None, 12).render(f'{self._hp}/{self._max_hp}', True, pygame.Color('black'))
+        place = hp.get_rect(center=(25, 5))
+        surface.blit(hp, place)
+
         try:
             pygame.draw.rect(surface, pygame.Color('gray'), (-1, 10, 50, 10))
             pygame.draw.rect(surface, pygame.Color('blue'), (-1, 10, 50 * (self._shields / self._max_shields) // 1, 10))
+
+            shield = pygame.font.Font(None, 12).render(f'{self._shields}/{self._max_shields}', True,
+                                                       pygame.Color('black'))
+            place = shield.get_rect(center=(25, 15))
+            surface.blit(shield, place)
         except ZeroDivisionError:
             pass
 

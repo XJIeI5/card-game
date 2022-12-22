@@ -72,7 +72,7 @@ class Battle:
                            self._draw_rect.height // (len(self._enemy_entities) + 1)
         offset_x, offset_y = -25, start_y
         for i, entity in enumerate(self._enemy_entities):
-            entity.rect.center = self._draw_rect.x + self._draw_rect.width - start_x - entity.rect.width / 4 * -i // 2, \
+            entity.rect.center = self._draw_rect.x + self._draw_rect.width - start_x - entity.rect.width / 4 * -i // 2,\
                                  self._draw_rect.y + start_y + offset_y * i
             surface.blit(entity.image, entity.rect)
 
@@ -87,7 +87,6 @@ class Battle:
                     card.rect.center = self._draw_rect.center
                 surface.blit(card.image, card.rect)
 
-        # action order
         self.draw_action_order(surface)
         screen.blit(surface, (self._draw_rect.x, self._draw_rect.y))
 
@@ -116,12 +115,12 @@ class Battle:
         if self._picked_card:
             if self._picked_card.action_area_type == ActionAreaType.SelfAction:
                 if self._current_acting_entity.rect.collidepoint(mouse_pos):
-                    self._picked_card.act(self._current_acting_entity)
+                    self._picked_card.act(self._current_acting_entity, self._current_acting_entity)
                     self.next_action()
             elif self._picked_card.action_area_type == ActionAreaType.OneEnemy:
                 for enemy in self._enemy_entities:
                     if enemy.rect.collidepoint(mouse_pos) and not enemy.is_dead:
-                        self._picked_card.act(enemy)
+                        self._picked_card.act(self._current_acting_entity, enemy)
                         self.next_action()
                         break
 

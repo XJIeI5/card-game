@@ -15,11 +15,11 @@ class BeetleSprite(pygame.sprite.Sprite):
 class Beetle(InBattleEntity):
     def __init__(self):
         cards = [card_bundle.RushAttack] * 3
-        super(Beetle, self).__init__(BeetleSprite(), 'жук', 10, 15, 10)
+        super(Beetle, self).__init__(BeetleSprite(), 'жук', 10, 15, 10, 10)
         self.extend_cards(cards)
 
     def act(self, player_entities: list[InBattleEntity]) -> None:
         card = random.choice(self._cards)
         player_entity = random.choice(player_entities)
-        card.act(player_entity)
+        card.act(self, player_entity)
         print('YRY')

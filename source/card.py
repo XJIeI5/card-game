@@ -52,8 +52,8 @@ class Card(pygame.sprite.Sprite):
 
         self._picked = False
 
-    def act(self, entity):
-        self._action(self, entity)
+    def act(self, user, entity):
+        self._action(user, entity)
 
     @property
     def image(self):

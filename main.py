@@ -18,8 +18,8 @@ class Test(pygame.sprite.Sprite):
 
 class FastPunch(Card):
     def __init__(self):
-        super(FastPunch, self).__init__(Test(), 'быстрый удар', 'сносит врага на 1о хп', CardType.Attack,
-                                        ActionAreaType.OneEnemy, lambda y, x: x.apply_damage(10))
+        super(FastPunch, self).__init__(Test(), 'быстрый удар', 'сносит врага на 1x хп', CardType.Attack,
+                                        ActionAreaType.OneEnemy, lambda y, x: x.apply_damage(y.attack * 1))
 
 
 class ShieldRestruct(Card):
@@ -39,11 +39,11 @@ def main():
     screen.fill(pygame.Color('black'))
     fps = 60
 
-    first_ent = InBattleEntity(Test(), 'abba', 50, 10, 10)
+    first_ent = InBattleEntity(Test(), 'abba', 50, 10, 10, 10)
     first_ent.extend_cards(cards)
-    second_ent = InBattleEntity(Test(), 'beeb', 30, 50, 20)
+    second_ent = InBattleEntity(Test(), 'beeb', 30, 50, 10, 20)
     second_ent.extend_cards(cards)
-    third_ent = InBattleEntity(Test(), 'cac', 80, 0, 60)
+    third_ent = InBattleEntity(Test(), 'cac', 80, 0, 10, 60)
     third_ent.extend_cards(cards * 4)
     player_ent = [first_ent, second_ent, third_ent]
 
