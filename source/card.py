@@ -28,8 +28,17 @@ class CardType(Enum):
     Buff = pygame.Color('gray')
 
 
+class ActionAreaType(Enum):
+    SelfAction = 0
+    OneEnemy = 1
+    OneAlly = 2
+    AllEnemies = 3
+    AllAllies = 4
+
+
 class Card(pygame.sprite.Sprite):
-    def __init__(self, sprite: pygame.sprite.Sprite, name: str, description: str, card_type: CardType, action):
+    def __init__(self, sprite: pygame.sprite.Sprite, name: str, description: str, card_type: CardType,
+                 action_area_type: ActionAreaType, action):
         super(Card, self).__init__()
         self._width, self._height = 100, 200
         self._mini_image = pygame.transform.scale(sprite.image, (70, 70))
@@ -38,9 +47,13 @@ class Card(pygame.sprite.Sprite):
         self._name = name
         self._description = description
         self._card_type = card_type
+        self._action_area_type = action_area_type
         self._action = action
 
         self._picked = False
+
+    def act(self, entity):
+        self._action(self, entity)
 
     @property
     def image(self):
@@ -67,6 +80,10 @@ class Card(pygame.sprite.Sprite):
     @picked.setter
     def picked(self, value):
         self._picked = value
+
+    @property
+    def action_area_type(self):
+        return self._action_area_type
 
     def __str__(self):
         return self._name

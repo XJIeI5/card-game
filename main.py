@@ -3,7 +3,8 @@ import sys
 
 from source.in_battle_entity import InBattleEntity
 from source.battle import Battle
-from source.card import Card, CardType
+from source.card import Card, CardType, ActionAreaType
+from source.enemies import Beetle
 
 
 class Test(pygame.sprite.Sprite):
@@ -15,8 +16,19 @@ class Test(pygame.sprite.Sprite):
         pygame.draw.rect(self.image, pygame.Color('gray'), self.rect, 5)
 
 
-cards = [Card(Test(), 'fast punch', 'beat enemy on 10 hp', CardType.Attack, lambda x: x.apply_damage(10)),
-         Card(Test(), 'shield restruct', 'restore 10 shields', CardType.Defend, lambda x: x.apply_shield(10))]
+class FastPunch(Card):
+    def __init__(self):
+        super(FastPunch, self).__init__(Test(), 'быстрый удар', 'сносит врага на 1о хп', CardType.Attack,
+                                        ActionAreaType.OneEnemy, lambda y, x: x.apply_damage(10))
+
+
+class ShieldRestruct(Card):
+    def __init__(self):
+        super(ShieldRestruct, self).__init__(Test(), 'пересборка', 'подзарежает щит на 10', CardType.Defend,
+                                             ActionAreaType.SelfAction, lambda y, x: x.apply_shield(10))
+
+
+cards = [FastPunch, ShieldRestruct]
 
 
 def main():
@@ -28,12 +40,16 @@ def main():
     fps = 60
 
     first_ent = InBattleEntity(Test(), 'abba', 50, 10, 10)
+    first_ent.extend_cards(cards)
     second_ent = InBattleEntity(Test(), 'beeb', 30, 50, 20)
+    second_ent.extend_cards(cards)
     third_ent = InBattleEntity(Test(), 'cac', 80, 0, 60)
-    third_ent.extend_cards(cards)
+    third_ent.extend_cards(cards * 4)
     player_ent = [first_ent, second_ent, third_ent]
-    entities = [InBattleEntity(Test(), 'juk', 10, 10, 10), InBattleEntity(Test(), 'kuk', 20, 20, 20), InBattleEntity(Test(), 'ruk', 30, 30, 30)]
-    battle = Battle(pygame.Rect((0, 0, width - 0, height - 0)), player_ent, entities + [InBattleEntity(Test(), 'chuk', 50, 50, 50)])
+
+    entities = [Beetle(), Beetle(), Beetle()]
+
+    battle = Battle(pygame.Rect((0, 0, width - 0, height - 0)), player_ent, entities)
     print(battle._move_order)
 
     while True:
@@ -41,7 +57,7 @@ def main():
             if event.type == pygame.QUIT:
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                battle.pick_card(event.pos)
+                battle.get_click(event.pos)
         screen.fill(pygame.Color('black'))
         battle.draw(screen)
         clock.tick(fps)
