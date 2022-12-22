@@ -22,4 +22,4 @@ class Beetle(InBattleEntity):
         card = random.choice(self._cards)
         player_entity = random.choice(player_entities)
         card.act(self, player_entity)
-        print('YRY')
+        print('hurted', player_entity, 'by')

@@ -59,24 +59,32 @@ class Battle:
 
     def draw(self, screen: pygame.Surface) -> None:
         surface = pygame.Surface((self._draw_rect.width, self._draw_rect.height))
+
+        self.draw_player(surface)
+        self.draw_enemies(surface)
+        self.draw_cards(surface)
+        self.draw_action_order(surface)
+        screen.blit(surface, (self._draw_rect.x, self._draw_rect.y))
+
+    def draw_player(self, surface: pygame.Surface) -> None:
         start_x, start_y = self._draw_rect.width // (len(self._player_entities) + 1), \
                            self._draw_rect.height // (len(self._player_entities) + 1)
-        offset_x, offset_y = -25, start_y
-        # player
+        offset_x, offset_y = -25, (self._draw_rect.height - 200) // (len(self._player_entities) + 1)
         for i, entity in enumerate(self._player_entities):
             entity.rect.center = self._draw_rect.x + start_x + entity.rect.width // 4 * -i // 2, \
                                  self._draw_rect.y + start_y + offset_y * i
             surface.blit(entity.image, entity.rect)
-        # enemy
+
+    def draw_enemies(self, surface: pygame.Surface) -> None:
         start_x, start_y = self._draw_rect.width // (len(self._enemy_entities) + 1), \
                            self._draw_rect.height // (len(self._enemy_entities) + 1)
-        offset_x, offset_y = -25, start_y
+        offset_x, offset_y = -25, (self._draw_rect.height - 200) // (len(self._enemy_entities) + 1)
         for i, entity in enumerate(self._enemy_entities):
             entity.rect.center = self._draw_rect.x + self._draw_rect.width - start_x - entity.rect.width / 4 * -i // 2,\
                                  self._draw_rect.y + start_y + offset_y * i
             surface.blit(entity.image, entity.rect)
 
-        # cards
+    def draw_cards(self, surface: pygame.Surface) -> None:
         if self._current_acting_entity in self._player_entities:
             self._current_cards = self._current_acting_entity.get_cards()
             for i, card in enumerate(self._current_acting_entity.get_cards()):
@@ -86,9 +94,6 @@ class Battle:
                 if card.picked:
                     card.rect.center = self._draw_rect.center
                 surface.blit(card.image, card.rect)
-
-        self.draw_action_order(surface)
-        screen.blit(surface, (self._draw_rect.x, self._draw_rect.y))
 
     def draw_action_order(self, surface: pygame.Surface) -> None:
         cell_size = 50
