@@ -15,7 +15,7 @@ class PlayerViewMap(GameMap):
     def __init__(self, rect: pygame.rect.Rect, fill: CellModifierType):
         super(PlayerViewMap, self).__init__(rect, fill)
         self._player_position: typing.Tuple[int, int] = None
-        self._opened_cells: list[list[Cell]] = []
+        self._opened_cells: typing.List[typing.List[Cell]] = []
         self._game_map_image: pygame.Surface = pygame.Surface((self._draw_rect.width, self._draw_rect.height))
 
     def save_to_txt(self, file_name: str):

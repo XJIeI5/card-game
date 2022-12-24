@@ -11,7 +11,7 @@ from source.triangulation import get_lines_from_triangulation
 
 
 def get_cells_with_same_generate_mod(cell_dict: typing.Dict[CellModifierType, GenerateMod], condition: GenerateModType) \
-        -> list[typing.Tuple[CellModifierType, GenerateMod]]:
+        -> typing.List[typing.Tuple[CellModifierType, GenerateMod]]:
     """** args **
     cell_dict  -  dictionary with all types of cells
     condition  -  searchable generate mod type
@@ -23,7 +23,7 @@ def get_cells_with_same_generate_mod(cell_dict: typing.Dict[CellModifierType, Ge
     return [(key, value) for key, value in cell_dict.items() if value.type == condition]
 
 
-def check_neighbour(board: list, col_index: int, row_index: int):
+def check_neighbour(board: typing.List, col_index: int, row_index: int):
     """** args **
     board  -  the board on which the search will be performed
     row_index  -  the row index of the element around which the search will take place
@@ -118,8 +118,8 @@ class GameMap:
         self.place_probability_type_cells(probability_cells, placed_cell_indexes)
         self.place_count_type_cells(count_cells, base_cells, placed_cell_indexes)
 
-    def place_base_type_cells(self, base_cells: list[typing.Tuple[CellModifierType, GenerateMod]]) \
-            -> list[typing.Tuple[int, int]]:
+    def place_base_type_cells(self, base_cells: typing.List[typing.Tuple[CellModifierType, GenerateMod]]) \
+            -> typing.List[typing.Tuple[int, int]]:
         """** args **
         base_cells  -  list of CellTypes and GenerateMod with GenerateMod.type == Base
 
@@ -141,8 +141,8 @@ class GameMap:
                 base_cells_placed_cell_indexes.append((array_index, element_index))
         return base_cells_placed_cell_indexes
 
-    def place_bridge_cells(self, base_cells: list[typing.Tuple[CellModifierType, GenerateMod]]) \
-            -> list[typing.Tuple[int, int]]:
+    def place_bridge_cells(self, base_cells: typing.List[typing.Tuple[CellModifierType, GenerateMod]]) \
+            -> typing.List[typing.Tuple[int, int]]:
         """** args **
         base_cells  - list of CellTypes and GenerateMod with GenerateMod.type == Base
 
@@ -161,8 +161,9 @@ class GameMap:
             bridge_cells_placed_cell_indexes.append((array_index, element_index))
         return bridge_cells_placed_cell_indexes
 
-    def place_probability_type_cells(self, probability_cells: list[typing.Tuple[CellModifierType, GenerateMod]],
-                                     placed_cell_indexes: list[typing.Tuple[int, int]]) -> list[typing.Tuple[int, int]]:
+    def place_probability_type_cells(self, probability_cells: typing.List[typing.Tuple[CellModifierType, GenerateMod]],
+                                     placed_cell_indexes: typing.List[typing.Tuple[int, int]])\
+            -> typing.List[typing.Tuple[int, int]]:
         """** args **
         probability_cells  -  list of CellTypes and GenerateMod with GenerateMod.type == Probability
         placed_cell_indexes  -  indexes of GenerateMod.type == Base cells on map
@@ -185,9 +186,10 @@ class GameMap:
             probability_cells_placed_cell_indexes.append((array_index, element_index))
         return probability_cells_placed_cell_indexes
 
-    def place_count_type_cells(self, count_cells: list[typing.Tuple[CellModifierType, GenerateMod]],
-                               base_cells: list[typing.Tuple[CellModifierType, GenerateMod]],
-                               placed_cell_indexes: list[typing.Tuple[int, int]]) -> list[typing.Tuple[int, int]]:
+    def place_count_type_cells(self, count_cells: typing.List[typing.Tuple[CellModifierType, GenerateMod]],
+                               base_cells: typing.List[typing.Tuple[CellModifierType, GenerateMod]],
+                               placed_cell_indexes: typing.List[typing.Tuple[int, int]])\
+            -> typing.List[typing.Tuple[int, int]]:
         """** args **
         count_cells  -  list of CellTypes and GenerateMod with GenerateMod.type == Count
         base_cells  -  list of CellTypes and GenerateMod with GenerateMod.type == Base
@@ -197,7 +199,7 @@ class GameMap:
         places count type cells on the map on base type cells and returns the coordinates to which they were placed"""
 
         count_cells_placed_cell_indexes = []
-        base_cell_types: list[CellModifierType] = [i[0] for i in base_cells]
+        base_cell_types: typing.List[CellModifierType] = [i[0] for i in base_cells]
         count_cell_amount = sum([i[1].value for i in count_cells])
         print(count_cell_amount)
         try:
@@ -231,7 +233,7 @@ class GameMap:
         return True if random_probability > self._basic_cell_appearance_threshold else False
 
     @staticmethod
-    def get_base_type_cell(base_cells: list[typing.Tuple[CellModifierType, GenerateMod]]) \
+    def get_base_type_cell(base_cells: typing.List[typing.Tuple[CellModifierType, GenerateMod]]) \
             -> typing.Tuple[CellModifierType, GenerateMod]:
         """** args **
         base_cells  -  list of cells to choose one
@@ -241,7 +243,7 @@ class GameMap:
 
         return random.choices(population=base_cells, weights=[i[1].value for i in base_cells], k=1)[0]
 
-    def get_probability_type_cell(self, probability_cells: list[typing.Tuple[CellModifierType, GenerateMod]]) \
+    def get_probability_type_cell(self, probability_cells: typing.List[typing.Tuple[CellModifierType, GenerateMod]]) \
             -> typing.Union[None, typing.Tuple[CellModifierType, GenerateMod]]:
         """** args **
         probability_cells  -  list of cells to choose one
@@ -255,7 +257,7 @@ class GameMap:
         return random.choices(population=probability_cells, weights=[i[1].value for i in probability_cells], k=1)[0]
 
     @staticmethod
-    def get_count_type_cell(count_cells: list[typing.Tuple[CellModifierType, GenerateMod]]) \
+    def get_count_type_cell(count_cells: typing.List[typing.Tuple[CellModifierType, GenerateMod]]) \
             -> typing.Union[None, typing.Tuple[CellModifierType, GenerateMod]]:
         """** args **
         count_cells  -  list of cells to choose one
@@ -271,7 +273,7 @@ class GameMap:
         generate_mod.value = generate_mod.value - 1
         return new_count_cell_type, generate_mod
 
-    def connect_cells(self, coordinates: list[typing.Tuple[int, int]]) -> list:
+    def connect_cells(self, coordinates: typing.List[typing.Tuple[int, int]]) -> typing.List:
         """** args **
         coordinates  -  points to build bridges
 
@@ -288,7 +290,7 @@ class GameMap:
                 result.append(point)
         return result
 
-    def get_cell_on_each_island(self) -> list[pygame.Vector2]:
+    def get_cell_on_each_island(self) -> typing.List[pygame.Vector2]:
         """** description **
         return random cell from each island"""
 
@@ -307,7 +309,7 @@ class GameMap:
         return coordinates
 
     @staticmethod
-    def bresenham_algorithm(point1, point2) -> list[typing.Tuple[int, int]]:
+    def bresenham_algorithm(point1, point2) -> typing.List[typing.Tuple[int, int]]:
         """** args **
         point1  -  start of line
         point2  -  end of line
@@ -351,7 +353,7 @@ class GameMap:
             points.append([x, y])
         return points
 
-    def get_islands(self) -> list[list[Cell]]:
+    def get_islands(self) -> typing.List[typing.List[Cell]]:
         """** description **
         returns a list of 'islands' (a list of cells that are separated from the rest by self._fill cells)"""
 
@@ -365,7 +367,7 @@ class GameMap:
                 islands.append(self.get_connected_cells(row_index, cell_index))
         return islands
 
-    def get_connected_cells(self, row_index: int, col_index: int) -> list:
+    def get_connected_cells(self, row_index: int, col_index: int) -> typing.List:
         """** args **
         row_index  -  the index of row of the cell from which you want to get docked
         col_index  -  the index of col of the cell from which you want to get docked
@@ -394,7 +396,7 @@ class GameMap:
         return connected_cells
 
     @staticmethod
-    def get_neighbors(board: list, col_index: int, row_index: int, search_radius: typing.Tuple[int, int],
+    def get_neighbors(board: typing.List, col_index: int, row_index: int, search_radius: typing.Tuple[int, int],
                       consider_verticals: bool = True):
         """** args **
         board  -  the board on which the search will be performed
