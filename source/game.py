@@ -1,7 +1,28 @@
 import pygame
 import sys
 import typing
-from source.game_screen import GameMapScreen
+from enum import Enum
+from source.game_screen import GameMapScreen, BattleScreen
+from source.in_battle_entity import InBattleEntity
+from source.cell import Cell, CellModifierType
+from source.card_bundle import FastPunch, ShieldRestruct
+
+
+class GameState(Enum):
+    GameMap = 0
+    Battle = 1
+
+
+class TestSprite(pygame.sprite.Sprite):
+    def __init__(self):
+        super(TestSprite, self).__init__()
+        self._image = pygame.Surface((500, 500))
+        self._image.fill(pygame.Color('blue'))
+        self.rect = self.image.get_rect()
+
+    @property
+    def image(self):
+        return pygame.transform.scale(self._image, (70, 70))
 
 
 class Game:
@@ -13,32 +34,72 @@ class Game:
         self._screen.fill(pygame.Color('black'))
         self._fps = 60
 
+        self._state = GameState.GameMap
+        cards = [ShieldRestruct, FastPunch]
+        self._player_entities = [InBattleEntity(TestSprite(), 'A person', 50, 25, 10, 1),
+                                 InBattleEntity(TestSprite(), 'B person', 50, 25, 10, 1),
+                                 InBattleEntity(TestSprite(), 'C person', 50, 25, 10, 1)]
+        [i.extend_cards(cards) for i in self._player_entities]
+
         self._game_map_screen = GameMapScreen(size)
+        self._battle_screen = None
 
     def run(self) -> None:
         while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    sys.exit()
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
-                    self._game_map_screen.game_map.move_player((-1, 0))
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
-                    self._game_map_screen.game_map.move_player((1, 0))
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
-                    self._game_map_screen.game_map.move_player((0, 1))
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
-                    self._game_map_screen.game_map.move_player((0, -1))
-            state = pygame.key.get_pressed()
-            if state[pygame.K_w]:
-                self._game_map_screen.game_map.move((0, 1))
-            if state[pygame.K_s]:
-                self._game_map_screen.game_map.move((0, -1))
-            if state[pygame.K_a]:
-                self._game_map_screen.game_map.move((1, 0))
-            if state[pygame.K_d]:
-                self._game_map_screen.game_map.move((-1, 0))
-            self._screen.fill(pygame.Color('black'))
-            self._game_map_screen.game_map.draw(self._screen)
+            if self._state == GameState.GameMap:
+                self.game_map_view()
+            elif self._state == GameState.Battle:
+                self.battle_view()
 
             self._clock.tick(self._fps)
             pygame.display.flip()
+
+    def game_map_view(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
+                self._game_map_screen.game_map.move_player((-1, 0))
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
+                self._game_map_screen.game_map.move_player((1, 0))
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
+                self._game_map_screen.game_map.move_player((0, 1))
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
+                self._game_map_screen.game_map.move_player((0, -1))
+            print(self._game_map_screen.game_map.player_position)
+
+        key_state = pygame.key.get_pressed()
+        if key_state[pygame.K_w]:
+            self._game_map_screen.game_map.move((0, 1))
+        if key_state[pygame.K_s]:
+            self._game_map_screen.game_map.move((0, -1))
+        if key_state[pygame.K_a]:
+            self._game_map_screen.game_map.move((1, 0))
+        if key_state[pygame.K_d]:
+            self._game_map_screen.game_map.move((-1, 0))
+        self._screen.fill(pygame.Color('black'))
+        self._game_map_screen.game_map.draw(self._screen)
+
+        # state changing
+        player_position = self._game_map_screen.game_map.player_position
+        if self._game_map_screen.game_map.cells[player_position[1]][player_position[0]].modifier ==\
+                CellModifierType.EnemyCell:
+            self._state = GameState.Battle
+            self._battle_screen = BattleScreen(self._window_size, self._player_entities)
+            print('BATTLE')
+
+    def battle_view(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                self._battle_screen.battle.get_click(event.pos)
+        self._screen.fill(pygame.Color('black'))
+        self._battle_screen.battle.draw(self._screen)
+
+        # state changing
+        if self._battle_screen.battle.is_win:
+            self._state = GameState.GameMap
+            player_position = self._game_map_screen.game_map.player_position
+            self._game_map_screen.game_map.cells[player_position[1]][player_position[0]] =\
+                Cell(player_position[1], player_position[0], CellModifierType.EmptyCell)
