@@ -58,7 +58,7 @@ class PlayerViewMap(GameMap):
                      cell_dict: typing.Dict[CellModifierType, GenerateMod]) -> None:
         super(PlayerViewMap, self).generate_map(size, cell_dict)
         self.init_player()
-        self._opened_cells = [[(-1, (j, i)) for j in range(size[0])] for i in range(size[1])]
+        self._opened_cells = [[(-1, (i, j)) for j in range(size[0])] for i in range(size[1])]
         self.update_opened_cells()
         print(*self._cells, sep='\n', end='\n\n')
         print(*self._opened_cells, sep='\n', end='\n\n')
@@ -112,4 +112,4 @@ class PlayerViewMap(GameMap):
     def update_opened_cells(self) -> None:
         far = self.get_neighbors(self._opened_cells, *self._player_position, [2, 2])
         for value, coords in far:
-            self._opened_cells[coords[1]][coords[0]] = (0, coords)
+            self._opened_cells[coords[0]][coords[1]] = (0, coords)
