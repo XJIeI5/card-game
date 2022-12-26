@@ -51,8 +51,8 @@ class PlayerViewMap(GameMap):
                 self._cells.append(result)
                 self._opened_cells.append(opened_result)
         self.init_player()
-        print(*self._cells, sep='\n', end='\n\n')
-        print(*self._opened_cells, sep='\n', end='\n\n')
+        # print(*self._cells, sep='\n', end='\n\n')
+        # print(*self._opened_cells, sep='\n', end='\n\n')
 
     def generate_map(self, size: typing.Tuple[int, int],
                      cell_dict: typing.Dict[CellModifierType, GenerateMod]) -> None:
@@ -60,8 +60,8 @@ class PlayerViewMap(GameMap):
         self.init_player()
         self._opened_cells = [[(-1, (i, j)) for j in range(size[0])] for i in range(size[1])]
         self.update_opened_cells()
-        print(*self._cells, sep='\n', end='\n\n')
-        print(*self._opened_cells, sep='\n', end='\n\n')
+        # print(*self._cells, sep='\n', end='\n\n')
+        # print(*self._opened_cells, sep='\n', end='\n\n')
 
     def draw(self, screen: pygame.Surface) -> None:
         surface = pygame.Surface((self._draw_rect.width, self._draw_rect.height))
@@ -113,3 +113,7 @@ class PlayerViewMap(GameMap):
         far = self.get_neighbors(self._opened_cells, *self._player_position, [2, 2])
         for value, coords in far:
             self._opened_cells[coords[0]][coords[1]] = (0, coords)
+
+    @property
+    def player_position(self):
+        return self._player_position
