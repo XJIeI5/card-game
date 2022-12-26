@@ -49,7 +49,6 @@ class GameMap:
         # contains all cells on map
         self._fill = fill
         self._cells = []
-        self._entity_cells = []
         self.fill_map()
         # visualize params
         self._cell_width: int = 8
@@ -462,6 +461,10 @@ class GameMap:
     @property
     def cells(self):
         return self._cells
+
+    @cells.setter
+    def cells(self, value):
+        self._cells = value
 
     @property
     def width(self):
