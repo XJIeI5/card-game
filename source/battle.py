@@ -17,6 +17,9 @@ class Battle:
         self._current_cards = []
         self._picked_card = None
 
+        self._is_win = False
+        self._is_lose = False
+
         self.init_move_order()
         self.next_action()
 
@@ -118,14 +121,39 @@ class Battle:
     def get_click(self, mouse_pos: typing.Tuple[int, int]) -> None:
         self.pick_card(mouse_pos)
         if self._picked_card:
+            # Self
             if self._picked_card.action_area_type == ActionAreaType.SelfAction:
                 if self._current_acting_entity.rect.collidepoint(mouse_pos):
                     self._picked_card.act(self._current_acting_entity, self._current_acting_entity)
                     self.next_action()
+            # OneEnemy
             elif self._picked_card.action_area_type == ActionAreaType.OneEnemy:
                 for enemy in self._enemy_entities:
                     if enemy.rect.collidepoint(mouse_pos) and not enemy.is_dead:
                         self._picked_card.act(self._current_acting_entity, enemy)
+                        self.next_action()
+                        break
+            # OneAlly
+            elif self._picked_card.action_area_type == ActionAreaType.OneAlly:
+                for ally in self._player_entities:
+                    if ally.rect.collidepoint(mouse_pos) and not ally.is_dead:
+                        self._picked_card.act(self._current_acting_entity, ally)
+                        self.next_action()
+                        break
+            # AllEnemies
+            elif self._picked_card.action_area_type == ActionAreaType.AllEnemies:
+                for enemy in self._enemy_entities:
+                    if enemy.rect.collidepoint(mouse_pos) and not enemy.is_dead:
+                        for act_enemy in self._enemy_entities:
+                            self._picked_card.act(self._current_acting_entity, act_enemy)
+                        self.next_action()
+                        break
+            # AllAllies
+            elif self._picked_card.action_area_type == ActionAreaType.AllAllies:
+                for ally in self._player_entities:
+                    if ally.rect.collidepoint(mouse_pos) and not ally.is_dead:
+                        for act_ally in self._player_entities:
+                            self._picked_card.act(self._current_acting_entity, act_ally)
                         self.next_action()
                         break
 
