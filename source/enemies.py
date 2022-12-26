@@ -18,8 +18,8 @@ class Beetle(InBattleEntity):
         super(Beetle, self).__init__(BeetleSprite(), 'жук', 10, 15, 10, 10)
         self.extend_cards(cards)
 
-    def act(self, player_entities: list[InBattleEntity]) -> None:
+    def act(self, player_entities: typing.List[InBattleEntity]) -> None:
         card = random.choice(self._cards)
         player_entity = random.choice(player_entities)
         card.act(self, player_entity)
-        print('hurted', player_entity, 'by')
+        print('hurted', player_entity, 'by 10')
