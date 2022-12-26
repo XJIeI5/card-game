@@ -156,6 +156,8 @@ class Battle:
                             self._picked_card.act(self._current_acting_entity, act_ally)
                         self.next_action()
                         break
+            if all([i.is_dead for i in self._enemy_entities]):
+                self._is_win = True
 
     def pick_card(self, mouse_pos: typing.Tuple[int, int]) -> None:
         for card in self._current_cards:
@@ -168,3 +170,11 @@ class Battle:
                     self._picked_card = None
                     return
                 self._picked_card = card
+
+    @property
+    def is_win(self):
+        return self._is_win
+
+    @property
+    def is_lose(self):
+        return self._is_lose
