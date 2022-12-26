@@ -45,6 +45,7 @@ def main():
             game_map.move((-1, 0))
         screen.fill(pygame.Color('black'))
         game_map.draw(screen)
+        
         clock.tick(fps)
         pygame.display.flip()
 
