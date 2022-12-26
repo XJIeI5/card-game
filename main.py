@@ -1,34 +1,10 @@
 import pygame
 import sys
 
-from source.in_battle_entity import InBattleEntity
-from source.battle import Battle
-from source.card import Card, CardType, ActionAreaType
-from source.enemies import Beetle
-
-
-class Test(pygame.sprite.Sprite):
-    def __init__(self):
-        super(Test, self).__init__()
-        self.image = pygame.Surface((100, 100))
-        self.image.fill(pygame.Color((162, 162, 208)))
-        self.rect = self.image.get_rect()
-        pygame.draw.rect(self.image, pygame.Color('gray'), self.rect, 5)
-
-
-class FastPunch(Card):
-    def __init__(self):
-        super(FastPunch, self).__init__(Test(), 'быстрый удар', 'сносит врага на 1x хп', CardType.Attack,
-                                        ActionAreaType.OneEnemy, lambda y, x: x.apply_damage(y.attack * 1))
-
-
-class ShieldRestruct(Card):
-    def __init__(self):
-        super(ShieldRestruct, self).__init__(Test(), 'пересборка', 'подзарежает щит на 10', CardType.Defend,
-                                             ActionAreaType.SelfAction, lambda y, x: x.apply_shield(10))
-
-
-cards = [FastPunch, ShieldRestruct]
+from source.game_map import GameMap
+from source.player_view_map import PlayerViewMap
+from source.cell import CellModifierType
+from source.generate_mod import GenerateMod, GenerateModType
 
 
 def main():
@@ -39,27 +15,37 @@ def main():
     screen.fill(pygame.Color('black'))
     fps = 60
 
-    first_ent = InBattleEntity(Test(), 'abba', 50, 10, 10, 10)
-    first_ent.extend_cards(cards)
-    second_ent = InBattleEntity(Test(), 'beeb', 30, 50, 10, 20)
-    second_ent.extend_cards(cards)
-    third_ent = InBattleEntity(Test(), 'cac', 80, 0, 10, 60)
-    third_ent.extend_cards(cards * 4)
-    player_ent = [first_ent, second_ent, third_ent]
-
-    entities = [Beetle(), Beetle(), Beetle()]
-
-    battle = Battle(pygame.Rect((0, 0, width - 0, height - 0)), player_ent, entities)
-    print(battle._move_order)
+    game_map = PlayerViewMap(pygame.Rect((50, 50, width - 100, height - 100)), None)
+    # game_map.load_from_txt('./source/data/save_map.txt')
+    cell_dict = {CellModifierType.EmptyCell: GenerateMod(GenerateModType.Base, 1),
+                 CellModifierType.EnemyCell: GenerateMod(GenerateModType.Count, 1)}
+    game_map.generate_map((15, 15), cell_dict)
+    game_map.save_to_txt('./source/data/save_map.txt')
 
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                battle.get_click(event.pos)
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
+                game_map.move_player((-1, 0))
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
+                game_map.move_player((1, 0))
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
+                game_map.move_player((0, 1))
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
+                game_map.move_player((0, -1))
+        state = pygame.key.get_pressed()
+        if state[pygame.K_w]:
+            game_map.move((0, 1))
+        if state[pygame.K_s]:
+            game_map.move((0, -1))
+        if state[pygame.K_a]:
+            game_map.move((1, 0))
+        if state[pygame.K_d]:
+            game_map.move((-1, 0))
         screen.fill(pygame.Color('black'))
-        battle.draw(screen)
+        game_map.draw(screen)
+        
         clock.tick(fps)
         pygame.display.flip()
 
