@@ -2,15 +2,17 @@ import pygame
 import sys
 import typing
 from enum import Enum
-from source.game_screen import GameMapScreen, BattleScreen
+from source.game_screen import GameMapScreen, BattleScreen, PalmtopUIScreen
 from source.player_entity import PlayerEntity, PlayerSpeciality
 from source.cell import Cell, CellModifierType
 from source.card_bundle import FastPunch, ShieldRestruct
+from source.ui import Button
 
 
 class GameState(Enum):
     GameMap = 0
     Battle = 1
+    Palmtop = 2
 
 
 class TestSprite(pygame.sprite.Sprite):
@@ -33,7 +35,6 @@ class Game:
         self._clock = pygame.time.Clock()
         self._screen.fill(pygame.Color('black'))
         self._fps = 60
-
         self._state = GameState.GameMap
         cards = [ShieldRestruct, FastPunch]
         self._player_entities = [PlayerEntity(TestSprite(), 'A person', 50, 25, 10, 1, PlayerSpeciality.Medic, 1),
@@ -42,7 +43,8 @@ class Game:
         [i.extend_cards(cards) for i in self._player_entities]
 
         self._game_map_screen = GameMapScreen(size)
-        self._battle_screen = None
+        self._battle_screen: typing.Union[None, BattleScreen] = None
+        self._palmtop_screen: typing.Union[None, PalmtopUIScreen] = None
 
     def run(self) -> None:
         while True:
@@ -50,6 +52,8 @@ class Game:
                 self.game_map_view()
             elif self._state == GameState.Battle:
                 self.battle_view()
+            elif self._state == GameState.Palmtop:
+                self.palmtop_view()
 
             self._clock.tick(self._fps)
             pygame.display.flip()
@@ -57,6 +61,7 @@ class Game:
     def game_map_view(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
                 self._game_map_screen.game_map.move_player((-1, 0))
@@ -66,7 +71,12 @@ class Game:
                 self._game_map_screen.game_map.move_player((0, 1))
             if event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
                 self._game_map_screen.game_map.move_player((0, -1))
-            print(self._game_map_screen.game_map.player_position)
+
+            # state changing
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if self._game_map_screen.palmtop_button.rect.collidepoint(event.pos):
+                    self._state = GameState.Palmtop
+                    self._palmtop_screen = PalmtopUIScreen(self._window_size, self._player_entities)
 
         key_state = pygame.key.get_pressed()
         if key_state[pygame.K_w]:
@@ -78,11 +88,11 @@ class Game:
         if key_state[pygame.K_d]:
             self._game_map_screen.game_map.move((-1, 0))
         self._screen.fill(pygame.Color('black'))
-        self._game_map_screen.game_map.draw(self._screen)
+        self._game_map_screen.draw(self._screen)
 
         # state changing
         player_position = self._game_map_screen.game_map.player_position
-        if self._game_map_screen.game_map.cells[player_position[1]][player_position[0]].modifier ==\
+        if self._game_map_screen.game_map.cells[player_position[1]][player_position[0]].modifier == \
                 CellModifierType.EnemyCell:
             self._state = GameState.Battle
             self._battle_screen = BattleScreen(self._window_size, self._player_entities)
@@ -91,15 +101,29 @@ class Game:
     def battle_view(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                pygame.quit()
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 self._battle_screen.battle.get_click(event.pos)
         self._screen.fill(pygame.Color('black'))
-        self._battle_screen.battle.draw(self._screen)
+        self._battle_screen.draw(self._screen)
 
         # state changing
         if self._battle_screen.battle.is_win:
             self._state = GameState.GameMap
             player_position = self._game_map_screen.game_map.player_position
-            self._game_map_screen.game_map.cells[player_position[1]][player_position[0]] =\
+            self._game_map_screen.game_map.cells[player_position[1]][player_position[0]] = \
                 Cell(player_position[1], player_position[0], CellModifierType.EmptyCell)
+
+    def palmtop_view(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            # state changing
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if self._palmtop_screen.exit_button.rect.collidepoint(event.pos):
+                    self._state = GameState.GameMap
+
+        self._screen.fill(pygame.Color('black'))
+        self._palmtop_screen.draw(self._screen)

@@ -1,6 +1,3 @@
-import pygame
-import sys
-
 from source.game import Game
 
 
