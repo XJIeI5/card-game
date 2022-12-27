@@ -37,7 +37,7 @@ class BattleScreen(GameScreen):
         super(BattleScreen, self).__init__(size)
 
         self._player_entities = player_entities
-        enemy_entities = [Beetle(), Beetle(), Beetle()]
+        enemy_entities = [Beetle(1), Beetle(1), Beetle(1)]
         self._battle = Battle(pygame.Rect(0, 0, *size), player_entities, enemy_entities)
 
     def draw(self, screen: pygame.Surface):
@@ -46,3 +46,9 @@ class BattleScreen(GameScreen):
     @property
     def battle(self):
         return self._battle
+
+
+class PalmtopUIScreen(GameScreen):
+    def __init__(self, size: typing.Tuple[int, int]):
+        super(PalmtopUIScreen, self).__init__(size)
+

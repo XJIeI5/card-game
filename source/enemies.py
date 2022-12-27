@@ -13,9 +13,9 @@ class BeetleSprite(pygame.sprite.Sprite):
 
 
 class Beetle(InBattleEntity):
-    def __init__(self):
+    def __init__(self, level: int):
         cards = [card_bundle.RushAttack] * 3
-        super(Beetle, self).__init__(BeetleSprite(), 'жук', 10, 15, 10, 10)
+        super(Beetle, self).__init__(BeetleSprite(), 'жук', 10, 15, 10, level, 10)
         self.extend_cards(cards)
 
     def act(self, player_entities: typing.List[InBattleEntity]) -> None:

@@ -12,13 +12,14 @@ class HighlightType(Enum):
 
 class InBattleEntity(pygame.sprite.Sprite):
     def __init__(self, sprite: pygame.sprite.Sprite, name: str, max_hp: int, max_shields: int,
-                 attack: int, initiative: int):
+                 attack: int, level: int, initiative: int):
         super(InBattleEntity, self).__init__()
         self._image = sprite.image
         self._name = name
         self.rect = sprite.rect
         self._highlight_type = HighlightType.Default
         # characteristics
+        self._level = level
         self._attack = attack
         self._initiative = initiative
         self._strength = 0
@@ -142,6 +143,10 @@ class InBattleEntity(pygame.sprite.Sprite):
     @property
     def icon(self):
         return self._image
+
+    @property
+    def level(self):
+        return self._level
 
     def __repr__(self):
         return f'{self.__class__.__name__} {self._name}'

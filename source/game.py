@@ -3,7 +3,7 @@ import sys
 import typing
 from enum import Enum
 from source.game_screen import GameMapScreen, BattleScreen
-from source.in_battle_entity import InBattleEntity
+from source.player_entity import PlayerEntity, PlayerSpeciality
 from source.cell import Cell, CellModifierType
 from source.card_bundle import FastPunch, ShieldRestruct
 
@@ -36,9 +36,9 @@ class Game:
 
         self._state = GameState.GameMap
         cards = [ShieldRestruct, FastPunch]
-        self._player_entities = [InBattleEntity(TestSprite(), 'A person', 50, 25, 10, 1),
-                                 InBattleEntity(TestSprite(), 'B person', 50, 25, 10, 1),
-                                 InBattleEntity(TestSprite(), 'C person', 50, 25, 10, 1)]
+        self._player_entities = [PlayerEntity(TestSprite(), 'A person', 50, 25, 10, 1, PlayerSpeciality.Medic, 1),
+                                 PlayerEntity(TestSprite(), 'B person', 50, 25, 10, 1, PlayerSpeciality.Tank, 1),
+                                 PlayerEntity(TestSprite(), 'C person', 50, 25, 10, 1, PlayerSpeciality.Engineer, 1)]
         [i.extend_cards(cards) for i in self._player_entities]
 
         self._game_map_screen = GameMapScreen(size)
