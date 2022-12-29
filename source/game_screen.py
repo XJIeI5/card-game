@@ -77,11 +77,6 @@ class PalmtopUIScreen(GameScreen):
 
     def draw(self, screen: pygame.Surface):
         indent = 25
-        # icon_size = (screen.get_size()[0] - indent * len(self._player_entities)
-        #              - self._exit_button.rect.width) // len(self._player_entities)
-        # for index, player_entity in enumerate(self._player_entities):
-        #     screen.blit(pygame.transform.scale(player_entity.icon, (icon_size, icon_size)),
-        #                 ((icon_size + indent) * index, 0))
 
         self._draw_character_switcher(screen, (screen.get_rect().center[0] * 1.5 - indent, 10))
         # draw character
@@ -109,7 +104,6 @@ class PalmtopUIScreen(GameScreen):
         cols = [indent, surface.get_size()[0] // 2]
         for list_index, skills in enumerate(skill_tree.values()):
             for skill_index, skill in enumerate(skills):
-                alignment = Alignment.Right if skill_index % 2 == 0 else Alignment.Left
                 label = Label(BlueBackgroundSprite().image, (surface.get_size()[0] // 2 - indent * 2, 30),
                               skill, font_size=20, alignment=Alignment.Left)
                 label.draw(surface, (cols[skill_index], indent + indent * 2 * list_index))
