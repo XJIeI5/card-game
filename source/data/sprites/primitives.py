@@ -6,7 +6,6 @@ class NoneCellSprite(pygame.sprite.Sprite):
     def __init__(self):
         super(NoneCellSprite, self).__init__()
         self.image = pygame.Surface((500, 500))
-        self.image.fill(pygame.Color('black'))
         self.rect = self.image.get_rect()
 
 
@@ -48,11 +47,42 @@ class NPCCellSprite(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
 
 
-class UnopenedCellSprite(pygame.sprite.Sprite):
+class NextButtonSprite(pygame.sprite.Sprite):
     def __init__(self):
-        super(UnopenedCellSprite, self).__init__()
+        super(NextButtonSprite, self).__init__()
         self.image = pygame.Surface((500, 500))
         self.rect = self.image.get_rect()
-        pygame.draw.rect(self.image, pygame.Color((162, 162, 208)),
-                         (self.rect.x + 75, self.rect.y + 75, self.rect.width - 175, self.rect.height - 175))
+        pygame.draw.polygon(self.image, pygame.Color((162, 162, 208)),
+                            [(0, 0),
+                             (0, self.rect.height),
+                             (self.rect.width, self.rect.height // 2)])
+
+
+class PreviousButtonSprite(pygame.sprite.Sprite):
+    def __init__(self):
+        super(PreviousButtonSprite, self).__init__()
+        self.image = pygame.Surface((500, 500))
         self.rect = self.image.get_rect()
+        pygame.draw.polygon(self.image, pygame.Color((162, 162, 208)),
+                            [(self.rect.width, 0),
+                             (self.rect.width, self.rect.height),
+                             (0, self.rect.height // 2)])
+
+
+class BlueBackgroundSprite(pygame.sprite.Sprite):
+    def __init__(self):
+        super(BlueBackgroundSprite, self).__init__()
+        self.image = pygame.Surface((500, 500))
+        self.image.fill(pygame.Color((162, 162, 208)))
+        self.rect = self.image.get_rect()
+
+
+class ScaledSprite(pygame.sprite.Sprite):
+    def __init__(self, sprite: pygame.sprite.Sprite):
+        super(ScaledSprite, self).__init__()
+        self._image = sprite.image
+        self.rect = self.image.get_rect()
+
+    @property
+    def image(self):
+        return pygame.transform.scale(self._image, (70, 70))
