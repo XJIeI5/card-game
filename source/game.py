@@ -6,7 +6,7 @@ from source.game_screen import GameMapScreen, BattleScreen, PalmtopUIScreen
 from source.player_entity import PlayerEntity, PlayerSpeciality
 from source.cell import Cell, CellModifierType
 from source.card_bundle import FastPunch, ShieldRestruct
-from source.ui import Button
+from source.data.sprites.primitives import PlayerCellSprite, ScaledSprite
 
 
 class GameState(Enum):
@@ -18,13 +18,9 @@ class GameState(Enum):
 class TestSprite(pygame.sprite.Sprite):
     def __init__(self):
         super(TestSprite, self).__init__()
-        self._image = pygame.Surface((500, 500))
-        self._image.fill(pygame.Color('blue'))
+        self.image = pygame.Surface((500, 500))
+        self.image.fill(pygame.Color('blue'))
         self.rect = self.image.get_rect()
-
-    @property
-    def image(self):
-        return pygame.transform.scale(self._image, (70, 70))
 
 
 class Game:
@@ -37,9 +33,12 @@ class Game:
         self._fps = 60
         self._state = GameState.GameMap
         cards = [ShieldRestruct, FastPunch]
-        self._player_entities = [PlayerEntity(TestSprite(), 'A person', 50, 25, 10, 1, PlayerSpeciality.Medic, 1),
-                                 PlayerEntity(TestSprite(), 'B person', 50, 25, 10, 1, PlayerSpeciality.Tank, 1),
-                                 PlayerEntity(TestSprite(), 'C person', 50, 25, 10, 1, PlayerSpeciality.Engineer, 1)]
+        self._player_entities = [PlayerEntity(ScaledSprite(TestSprite()), 'A person', 50, 25, 10, 1,
+                                              PlayerSpeciality.Medic, 1),
+                                 PlayerEntity(ScaledSprite(PlayerCellSprite()), 'B person', 50, 25, 10, 1,
+                                              PlayerSpeciality.Tank, 1),
+                                 PlayerEntity(ScaledSprite(TestSprite()), 'C person', 50, 25, 10, 1,
+                                              PlayerSpeciality.Engineer, 1)]
         [i.extend_cards(cards) for i in self._player_entities]
 
         self._game_map_screen = GameMapScreen(size)
@@ -124,6 +123,7 @@ class Game:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if self._palmtop_screen.exit_button.rect.collidepoint(event.pos):
                     self._state = GameState.GameMap
+                self._palmtop_screen.get_click(event.pos)
 
         self._screen.fill(pygame.Color('black'))
         self._palmtop_screen.draw(self._screen)

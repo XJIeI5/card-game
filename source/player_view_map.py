@@ -3,7 +3,7 @@ import pygame
 from source.game_map import GameMap
 from source.cell import CellModifierType, Cell
 from source.generate_mod import GenerateMod
-from source.data.sprites.primitives import PlayerCellSprite, UnopenedCellSprite
+from source.data.sprites.primitives import PlayerCellSprite
 
 
 def draw_cell(screen: pygame.surface.Surface, rect: pygame.Rect, sprite: pygame.sprite.Sprite) -> None:
