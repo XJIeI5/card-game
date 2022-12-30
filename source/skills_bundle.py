@@ -6,10 +6,10 @@ class FirstAidSkill(Skill):
     def __init__(self):
         level_effects = [lambda y: y.extend_cards([FirstAid]),
                          lambda y: y.extend_cards([FirstAid]),
-                         lambda y: y.extend_cards([FirstAid])]
+                         lambda y: setattr(y, 'attack', y.attack + 10)]
         description = {1: 'добавляет карту Первая помощь (лечит 5 здоровья)',
                        2: 'добавляет карту Первая помощь (лечит 5 здоровья)',
-                       3: 'добавляет карту Первая помощь (лечит 5 здоровья)'}
+                       3: 'повышает урон на 10'}
         super(FirstAidSkill, self).__init__('первая помощь', 3, level_effects, description, current_level=1)
 
 
