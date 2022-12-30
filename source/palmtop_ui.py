@@ -52,7 +52,7 @@ class PalmtopUI:
                                                position[1]))
 
     def _draw_character_skill_tree(self, screen: pygame.Surface, position: typing.Tuple[int, int], indent=25):
-        surface = pygame.Surface((screen.get_size()[0] // 2, screen.get_size()[1] // 3))
+        surface = pygame.Surface((screen.get_size()[0] // 2, screen.get_size()[1] // 3 - 30))
         pygame.draw.rect(surface, pygame.Color('gray'), (0, 0, *surface.get_size()), 3)
         skill_tree: dict = self._current_player_entity.skills
         cols = [indent, surface.get_size()[0] // 2]
@@ -62,6 +62,11 @@ class PalmtopUI:
                                         + skill.rect.height * list_index, surface.get_size()[0] // 2 - indent * 2, 30)
                 skill.draw(surface, draw_rect)
         screen.blit(surface, position)
+
+        # upgrade points
+        upgrade_points = pygame.font.Font(None, 36).render(
+            f'осталось {self._current_player_entity.upgrade_points} улучшений', True, pygame.Color('white'))
+        screen.blit(upgrade_points, (position[0] + 5, position[1] + surface.get_size()[1] + 10))
 
     def _draw_accept_dialog_box(self, screen: pygame.Surface, position: typing.Tuple[int, int]):
         sure_label = Label(BlueBackgroundSprite().image, (self._draw_rect.width // 2, 35),
@@ -104,6 +109,7 @@ class PalmtopUI:
             if self._accept_button is not None and self._accept_button.rect.collidepoint(mouse_pos):
                 self._picked_skill.level_up()
                 self._picked_skill.apply_effect(self._current_player_entity)
+                self._current_player_entity.upgrade_points -= 1
                 print('cards:', self._current_player_entity.cards, 'attack:', self._current_player_entity.attack)
             self._picked_skill = None
             return
@@ -114,6 +120,8 @@ class PalmtopUI:
                     continue
                 self._picked_skill = skill
                 if self._picked_skill.current_level == self._picked_skill.max_level:
+                    self._picked_skill = None
+                if self._current_player_entity.upgrade_points <= 0:
                     self._picked_skill = None
 
     @property

@@ -42,6 +42,7 @@ class PlayerEntity(InBattleEntity):
 
         self._speciality = speciality
         self._skills = {}
+        self._upgrade_points = 1
         for index, skills in self._speciality.value.SkillTree.items():
             for skill_class in skills:
                 self._skills[index] = self._skills.get(index, []) + [skill_class()]
@@ -55,3 +56,11 @@ class PlayerEntity(InBattleEntity):
     @property
     def skills(self):
         return self._skills
+
+    @property
+    def upgrade_points(self):
+        return self._upgrade_points
+
+    @upgrade_points.setter
+    def upgrade_points(self, value):
+        self._upgrade_points = value
