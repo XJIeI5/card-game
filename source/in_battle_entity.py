@@ -87,21 +87,41 @@ class InBattleEntity(pygame.sprite.Sprite):
     def attack(self):
         return self._attack
 
+    @attack.setter
+    def attack(self, value):
+        self._attack = value
+
     @property
     def initiative(self):
         return self._initiative
+
+    @initiative.setter
+    def initiative(self, value):
+        self._initiative = value
 
     @property
     def strength(self):
         return self._strength
 
+    @strength.setter
+    def strength(self, value):
+        self._strength = value
+
     @property
     def dexterity(self):
         return self._dexterity
 
+    @dexterity.setter
+    def dexterity(self, value):
+        self._dexterity = value
+
     @property
     def intelligence(self):
         return self._intelligence
+
+    @intelligence.setter
+    def intelligence(self, value):
+        self._intelligence = value
 
     @property
     def cards(self):
