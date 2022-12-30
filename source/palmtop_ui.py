@@ -69,7 +69,7 @@ class PalmtopUI:
         sure_label.draw(screen, (position[0], position[1]))
 
         info_label = Label(BlueBackgroundSprite().image, (self._draw_rect.width // 2, self._draw_rect.height // 2 - 60),
-                           text=self._picked_skill.description[self._picked_skill.current_level], font_size=18)
+                           text=self._picked_skill.description[self._picked_skill.current_level + 1], font_size=18)
         info_label.draw(screen, (position[0], position[1] + sure_label.rect.height))
 
         self._accept_button = Label(GreenBackgroundSprite().image, (self._draw_rect.width // 2, 30),
@@ -104,7 +104,7 @@ class PalmtopUI:
             if self._accept_button is not None and self._accept_button.rect.collidepoint(mouse_pos):
                 self._picked_skill.level_up()
                 self._picked_skill.apply_effect(self._current_player_entity)
-                print(self._current_player_entity.cards)
+                print('cards:', self._current_player_entity.cards, 'attack:', self._current_player_entity.attack)
             self._picked_skill = None
             return
 
