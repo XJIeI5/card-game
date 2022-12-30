@@ -54,6 +54,13 @@ class InBattleEntity(pygame.sprite.Sprite):
 
     def apply_shield(self, shield: int):
         self._shields += shield
+        if self._shields > self._max_shields:
+            self._shields = self._max_shields
+
+    def apply_hp(self, hp: int):
+        self._hp += hp
+        if self._hp > self._max_hp:
+            self._hp = self._max_hp
 
     def extend_cards(self, cards: list):
         """gets a list of classes inherited from Card, instances of which will be added to self._cards"""
