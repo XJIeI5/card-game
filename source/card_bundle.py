@@ -27,3 +27,9 @@ class ShieldRestruct(Card):
     def __init__(self):
         super(ShieldRestruct, self).__init__(NoneSprite(), 'пересборка', 'подзарежает щит на 10', CardType.Defend,
                                              ActionAreaType.SelfAction, lambda y, x: x.apply_shield(10))
+        
+        
+class FirstAid(Card):
+    def __init__(self):
+        super(FirstAid, self).__init__(NoneSprite(), 'первая помощь', 'лечит на 5', CardType.Buff,
+                                       ActionAreaType.OneAlly, lambda y, x: x.apply_hp(5))

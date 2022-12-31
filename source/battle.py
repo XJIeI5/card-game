@@ -2,6 +2,7 @@ import pygame
 import typing
 from source.card import ActionAreaType
 from source.in_battle_entity import InBattleEntity, HighlightType
+from source.player_entity import PlayerEntity
 
 
 class Battle:
@@ -131,6 +132,9 @@ class Battle:
                 for enemy in self._enemy_entities:
                     if enemy.rect.collidepoint(mouse_pos) and not enemy.is_dead:
                         self._picked_card.act(self._current_acting_entity, enemy)
+                        # gain exp to character
+                        if enemy.is_dead and isinstance(self._current_acting_entity, PlayerEntity):
+                            self._current_acting_entity.get_exp(enemy.level)
                         self.next_action()
                         break
             # OneAlly
@@ -146,6 +150,9 @@ class Battle:
                     if enemy.rect.collidepoint(mouse_pos) and not enemy.is_dead:
                         for act_enemy in self._enemy_entities:
                             self._picked_card.act(self._current_acting_entity, act_enemy)
+                            # gain exp to character
+                            if enemy.is_dead and isinstance(self._current_acting_entity, PlayerEntity):
+                                self._current_acting_entity.get_exp(enemy.level)
                         self.next_action()
                         break
             # AllAllies
