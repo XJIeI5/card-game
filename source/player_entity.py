@@ -42,8 +42,8 @@ class PlayerEntity(InBattleEntity):
 
         self._speciality = speciality
         self._skills = {}
-        self._upgrade_points = 1
-        self._exp = 1
+        self._upgrade_points = 0
+        self._exp = 0
         self._exp_amount_to_raise_level = [0, 5, 10, 20, 40, 60, 100]
 
         for index, skills in self._speciality.value.SkillTree.items():
@@ -54,9 +54,10 @@ class PlayerEntity(InBattleEntity):
 
     def get_exp(self, exp_amount):
         self._exp += exp_amount
-        if self._exp > self._exp_amount_to_raise_level[self._level]:
-            self._level += 1
+        if self._exp >= self._exp_amount_to_raise_level[self._level]:
             self._exp = self._exp - self._exp_amount_to_raise_level[self._level]
+            self._level += 1
+            self._upgrade_points += 1
 
     @property
     def speciality(self):
