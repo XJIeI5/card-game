@@ -29,7 +29,7 @@ class PalmtopUI:
     def draw(self, screen: pygame.Surface):
         indent = 25
 
-        self._draw_character_switcher(screen, (screen.get_rect().center[0] * 1.5 - indent, 10))
+        self._draw_character_switcher(screen, (screen.get_rect().center[0] * 1.5 - indent, 0))
         # draw character
         screen.blit(pygame.transform.scale(self._current_player_entity.icon,
                                            (self._character_name_label.rect.width,
@@ -40,6 +40,11 @@ class PalmtopUI:
         self._draw_character_skill_tree(screen, (0, 0))
 
         self._exit_button.draw(screen, (screen.get_rect().width - self._exit_button.rect.width, 0))
+
+        self._draw_exp_progress_bar(screen,
+                                    (self._character_name_label.rect.x,
+                                     self._character_name_label.rect.width + self._character_name_label.rect.height +
+                                     indent + 5))
 
         if self._picked_skill:
             self._draw_accept_dialog_box(screen, (self._draw_rect.width // 4, self._draw_rect.height // 4))
@@ -80,6 +85,20 @@ class PalmtopUI:
         self._accept_button = Label(GreenBackgroundSprite().image, (self._draw_rect.width // 2, 30),
                                     text='подтвердить', font_size=20)
         self._accept_button.draw(screen, (position[0], position[1] + sure_label.rect.height + info_label.rect.height))
+
+    def _draw_exp_progress_bar(self, screen: pygame.Surface, position: typing.Tuple[int, int]):
+        pygame.draw.rect(screen, pygame.Color('gray'), (position[0], position[1],
+                                                        self._character_name_label.rect.width, 10))
+        one_piece = self._character_name_label.rect.width //\
+                    self._current_player_entity.exp_amount_to_raise_level[self._current_player_entity.level]
+        pygame.draw.rect(screen, pygame.Color('green'), (*position,
+                                                         one_piece * self._current_player_entity.exp, 10))
+
+        text = f'{self._current_player_entity.exp} / ' \
+               f'{self._current_player_entity.exp_amount_to_raise_level[self._current_player_entity.level]}'
+        exp_text = pygame.font.Font(None, 16).render(text, True, pygame.Color('black'))
+        place = pygame.Rect((*position, self._character_name_label.rect.width, 1)).center
+        screen.blit(exp_text, place)
 
     def get_click(self, mouse_pos: typing.Tuple[int, int]):
         self._switch_character(mouse_pos)
