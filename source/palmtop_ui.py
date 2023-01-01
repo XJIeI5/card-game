@@ -4,6 +4,8 @@ from source.ui import Label
 from source.data.sprites.primitives import NextButtonSprite, PreviousButtonSprite, BlueBackgroundSprite,\
     GreenBackgroundSprite
 from source.skill import Skill
+from source.inventory import Inventory
+from source.items_bundle import RockItem, GlassItem
 
 
 class PalmtopUI:
@@ -25,6 +27,10 @@ class PalmtopUI:
         self._accept_button: typing.Union[None, Label] = None
 
         self._picked_skill: typing.Union[None, Skill] = None
+        self._inventory = Inventory(pygame.Rect(0, 0, self._draw_rect.width, self._draw_rect.height // 2),
+                                    5, 5, 1)
+        self._inventory.extend_items({GlassItem: 102})
+        print(self._inventory._items)
 
     def draw(self, screen: pygame.Surface):
         indent = 25
@@ -40,6 +46,7 @@ class PalmtopUI:
         self._draw_character_skill_tree(screen, (0, 0))
 
         self._exit_button.draw(screen, (screen.get_rect().width - self._exit_button.rect.width, 0))
+        self._draw_inventory(screen, (0, screen.get_rect().height // 2))
 
         self._draw_exp_progress_bar(screen,
                                     (self._character_name_label.rect.x,
@@ -99,6 +106,10 @@ class PalmtopUI:
         exp_text = pygame.font.Font(None, 16).render(text, True, pygame.Color('black'))
         place = pygame.Rect((*position, self._character_name_label.rect.width, 1)).center
         screen.blit(exp_text, place)
+
+    def _draw_inventory(self, screen: pygame.Surface, position: typing.Tuple[int, int]):
+        self._inventory.draw_rect = pygame.Rect(*position, *self._inventory.draw_rect.size)
+        self._inventory.draw(screen)
 
     def get_click(self, mouse_pos: typing.Tuple[int, int]):
         self._switch_character(mouse_pos)
