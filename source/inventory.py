@@ -1,6 +1,7 @@
 import pygame
 import typing
-from source.data.sprites.primitives import BlueBackgroundSprite, GrayBackgroundSprite
+from source.data.sprites.primitives import PreviousButtonSprite, NextButtonSprite, BlueBackgroundSprite, \
+    GrayBackgroundSprite
 from source.ui import Label
 from source.item import Item
 
@@ -10,11 +11,21 @@ class Inventory:
         self._draw_rect = draw_rect
         self._rows = rows
         self._columns = columns
+        self._indent = 3
         self._max_pages = max_pages
-        self._current_page = 0
+        self._current_page = 1
 
         self._items: typing.List[Item] = []
         self._is_full = False
+
+        self._previous_page_button = Label(PreviousButtonSprite().image, (20, 25))
+        self._next_page_button = Label(NextButtonSprite().image, (20, 25))
+        self._current_page_label = Label(BlueBackgroundSprite().image, (50, 25),
+                                         text=str(self._current_page),  font_size=30)
+
+        self._item_size = (self._draw_rect.width // self._columns - self._indent,
+                           self._draw_rect.height // self._rows - (self._current_page_label.rect.height + self._indent)
+                           // self._rows - self._indent)
 
     def extend_items(self, new_items: typing.Dict[Item.__class__, int]):
         for item in self._items:
@@ -45,21 +56,47 @@ class Inventory:
         self._extend_to_item(item, count)
 
     def draw(self, screen: pygame.Surface):
-        indent = 3
-        start, end = (self._rows * self._columns) * self._current_page,\
-                     (self._rows * self._columns) + (self._rows * self._columns) * self._current_page
+        start, end = (self._rows * self._columns) * (self._current_page - 1),\
+                     (self._rows * self._columns) + (self._rows * self._columns) * (self._current_page - 1)
         items_to_draw = self._items[start:end]
         items_to_draw.extend([None for _ in range(self._rows * self._columns - len(items_to_draw))])
         for row in range(self._rows):
             for column in range(self._columns):
                 if items_to_draw[column + row * self._columns] is None:
-                    empty_label = Label(GrayBackgroundSprite().image, (Item.ItemSize, Item.ItemSize))
-                    empty_label.draw(screen, (self._draw_rect.x + column * (Item.ItemSize + indent),
-                                              self._draw_rect.y + row * (Item.ItemSize + indent)))
+                    empty_label = Label(GrayBackgroundSprite().image, self._item_size)
+                    empty_label.draw(screen, (self._draw_rect.x + column * (self._item_size[0] + self._indent),
+                                              self._draw_rect.y + row * (self._item_size[1] + self._indent)))
                     continue
-                items_to_draw[column + row * self._columns].draw(screen,
-                                                              (self._draw_rect.x + column * (Item.ItemSize + indent),
-                                                               self._draw_rect.y + row * (Item.ItemSize + indent)))
+                item = items_to_draw[column + row * self._columns]
+                item.scale(self._item_size)
+                item.draw(screen, (self._draw_rect.x + column * (self._item_size[0] + self._indent),
+                                   self._draw_rect.y + row * (self._item_size[1] + self._indent)))
+
+        self._draw_ui(screen)
+
+    def _draw_ui(self, screen: pygame.Surface, indent: int = 3):
+        draw_y = self._draw_rect.y + self._rows * (self._item_size[1] + indent)
+
+        self._current_page_label.draw(screen, (self._draw_rect.width // 2 - self._current_page_label.rect.width // 2,
+                                               draw_y))
+        self._previous_page_button.draw(screen, (self._draw_rect.width // 2 - self._current_page_label.rect.width // 2 -
+                                                 self._previous_page_button.rect.width * 1.5,
+                                                 draw_y))
+        self._next_page_button.draw(screen, (self._draw_rect.width // 2 + self._current_page_label.rect.width // 2 +
+                                             self._next_page_button.rect.width // 2,
+                                             draw_y))
+
+    def get_click(self, mouse_pos: typing.Tuple[int, int]):
+        self._switch_page(mouse_pos)
+
+    def _switch_page(self, mouse_pos: typing.Tuple[int, int]):
+        if self._next_page_button.rect.collidepoint(mouse_pos):
+            self._current_page += 1 if self._current_page < self._max_pages else 0
+            self._current_page_label.set_text(str(self._current_page))
+
+        if self._previous_page_button.rect.collidepoint(mouse_pos):
+            self._current_page -= 1 if self._current_page > 1 else 0
+            self._current_page_label.set_text(str(self._current_page))
 
     @property
     def draw_rect(self):
