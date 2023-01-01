@@ -9,7 +9,7 @@ from source.items_bundle import RockItem, GlassItem
 
 
 class PalmtopUI:
-    def __init__(self, draw_rect: pygame.Rect, player_entities: typing.List):
+    def __init__(self, draw_rect: pygame.Rect, player_entities: typing.List, inventory: Inventory):
 
         self._draw_rect = draw_rect
         self._drawing_screen: typing.Union[None, pygame.Surface] = None
@@ -27,10 +27,7 @@ class PalmtopUI:
         self._accept_button: typing.Union[None, Label] = None
 
         self._picked_skill: typing.Union[None, Skill] = None
-        self._inventory = Inventory(pygame.Rect(0, 0, self._draw_rect.width, self._draw_rect.height // 2),
-                                    5, 5, 1)
-        self._inventory.extend_items({GlassItem: 102})
-        print(self._inventory._items)
+        self._inventory = inventory
 
     def draw(self, screen: pygame.Surface):
         indent = 25
@@ -46,7 +43,7 @@ class PalmtopUI:
         self._draw_character_skill_tree(screen, (0, 0))
 
         self._exit_button.draw(screen, (screen.get_rect().width - self._exit_button.rect.width, 0))
-        self._draw_inventory(screen, (0, screen.get_rect().height // 2))
+        self._draw_inventory(screen, (0, screen.get_rect().height // 2 - 5))
 
         self._draw_exp_progress_bar(screen,
                                     (self._character_name_label.rect.x,
@@ -56,12 +53,12 @@ class PalmtopUI:
         if self._picked_skill:
             self._draw_accept_dialog_box(screen, (self._draw_rect.width // 4, self._draw_rect.height // 4))
 
-    def _draw_character_switcher(self, screen: pygame.Surface, position: typing.Tuple[int, int], indent=25):
-        self._character_name_label.draw(screen, (position[0] - self._character_name_label.rect.width // 2, position[1]))
-        self._previous_player_button.draw(screen, (position[0] - self._character_name_label.rect.width // 2 - indent -
-                                                   self._previous_player_button.rect.width, position[1]))
-        self._next_player_button.draw(screen, (position[0] + self._character_name_label.rect.width // 2 + indent,
-                                               position[1]))
+    def _draw_character_switcher(self, screen: pygame.Surface, center: typing.Tuple[int, int], indent=25):
+        self._character_name_label.draw(screen, (center[0] - self._character_name_label.rect.width // 2, center[1]))
+        self._previous_player_button.draw(screen, (center[0] - self._character_name_label.rect.width // 2 - indent -
+                                                   self._previous_player_button.rect.width, center[1]))
+        self._next_player_button.draw(screen, (center[0] + self._character_name_label.rect.width // 2 + indent,
+                                               center[1]))
 
     def _draw_character_skill_tree(self, screen: pygame.Surface, position: typing.Tuple[int, int], indent=25):
         surface = pygame.Surface((screen.get_size()[0] // 2, screen.get_size()[1] // 3 - 30))
@@ -114,6 +111,7 @@ class PalmtopUI:
     def get_click(self, mouse_pos: typing.Tuple[int, int]):
         self._switch_character(mouse_pos)
         self._upgrade_skill(mouse_pos)
+        self._inventory.get_click(mouse_pos)
 
     def _switch_character(self, mouse_pos: typing.Tuple[int, int]):
         if self._next_player_button.rect.collidepoint(mouse_pos):
