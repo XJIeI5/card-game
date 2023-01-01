@@ -52,12 +52,12 @@ class Inventory:
         items_to_draw.extend([None for _ in range(self._rows * self._columns - len(items_to_draw))])
         for row in range(self._rows):
             for column in range(self._columns):
-                if items_to_draw[column + row * self._rows] is None:
+                if items_to_draw[column + row * self._columns] is None:
                     empty_label = Label(GrayBackgroundSprite().image, (Item.ItemSize, Item.ItemSize))
                     empty_label.draw(screen, (self._draw_rect.x + column * (Item.ItemSize + indent),
                                               self._draw_rect.y + row * (Item.ItemSize + indent)))
                     continue
-                items_to_draw[column + row * self._rows].draw(screen,
+                items_to_draw[column + row * self._columns].draw(screen,
                                                               (self._draw_rect.x + column * (Item.ItemSize + indent),
                                                                self._draw_rect.y + row * (Item.ItemSize + indent)))
 
