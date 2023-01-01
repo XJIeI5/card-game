@@ -3,12 +3,11 @@ import typing
 
 
 class Item(pygame.sprite.Sprite):
-    ItemSize = 40
 
     def __init__(self, sprite: pygame.sprite.Sprite, name: str, max_stack: int, current_stack: int = 0):
         super(Item, self).__init__()
-        self.image = pygame.transform.scale(sprite.image, (Item.ItemSize, Item.ItemSize))
-        self.rect = pygame.Rect(*sprite.rect.topleft, Item.ItemSize, Item.ItemSize)
+        self.image = sprite.image
+        self.rect = self.image.get_rect()
         self._name = name
         self._max_stack = max_stack
         self._current_stack = current_stack
@@ -39,6 +38,10 @@ class Item(pygame.sprite.Sprite):
         stack_text = pygame.font.Font(None, 18).render(str(self._current_stack), True, pygame.Color('white'))
         place = stack_text.get_rect(bottomright=self.rect.bottomright)
         screen.blit(stack_text, place)
+
+    def scale(self, new_size: typing.Tuple[int, int]):
+        self.image = pygame.transform.scale(self.image, new_size)
+        self.rect = self.image.get_rect()
 
     @property
     def name(self):
