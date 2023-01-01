@@ -85,6 +85,14 @@ class GreenBackgroundSprite(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
 
 
+class GrayBackgroundSprite(pygame.sprite.Sprite):
+    def __init__(self):
+        super(GrayBackgroundSprite, self).__init__()
+        self.image = pygame.Surface((500, 500))
+        self.image.fill(pygame.Color('gray'))
+        self.rect = self.image.get_rect()
+
+
 class ScaledSprite(pygame.sprite.Sprite):
     def __init__(self, sprite: pygame.sprite.Sprite):
         super(ScaledSprite, self).__init__()
