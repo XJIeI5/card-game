@@ -6,8 +6,7 @@ from source.generate_mod import GenerateMod, GenerateModType
 from source.battle import Battle
 from source.enemies import Beetle
 from source.ui import Label, Alignment
-from source.data.sprites.primitives import NextButtonSprite, PreviousButtonSprite, BlueBackgroundSprite,\
-    GreenBackgroundSprite
+from source.inventory import Inventory
 from source.palmtop_ui import PalmtopUI
 
 
@@ -64,10 +63,10 @@ class BattleScreen(GameScreen):
 
 
 class PalmtopUIScreen(GameScreen):
-    def __init__(self, size: typing.Tuple[int, int], player_entities: typing.List):
+    def __init__(self, size: typing.Tuple[int, int], player_entities: typing.List, inventory: Inventory):
         super(PalmtopUIScreen, self).__init__(size)
 
-        self._palmtop_ui = PalmtopUI(pygame.Rect(0, 0, *size), player_entities)
+        self._palmtop_ui = PalmtopUI(pygame.Rect(0, 0, *size), player_entities, inventory)
 
     def draw(self, screen: pygame.Surface):
         self._palmtop_ui.draw(screen)
