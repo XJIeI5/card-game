@@ -1,6 +1,6 @@
 import pygame
 import typing
-from source.ui import Label
+from source.ui import Label, AcceptDialog
 from source.data.sprites.primitives import NextButtonSprite, PreviousButtonSprite, BlueBackgroundSprite,\
     GreenBackgroundSprite
 from source.skill import Skill
@@ -24,7 +24,9 @@ class PalmtopUI:
         self._previous_player_button = Label(PreviousButtonSprite().image, (30, 27))
         self._character_name_label = Label(BlueBackgroundSprite().image, (200, 30),
                                            text=self._current_player_entity.name, font_size=24)
-        self._accept_button: typing.Union[None, Label] = None
+        self._accept_skill_dialog = AcceptDialog(BlueBackgroundSprite().image,
+                                                 (self._draw_rect.width // 2, self._draw_rect.height // 2),
+                                                 title='Вы уверены?!', font_size=28, info_font_size=18)
 
         self._picked_skill: typing.Union[None, Skill] = None
         self._inventory = inventory
@@ -37,7 +39,7 @@ class PalmtopUI:
         screen.blit(pygame.transform.scale(self._current_player_entity.icon,
                                            (self._character_name_label.rect.width,
                                             self._character_name_label.rect.width)),
-                    (self._character_name_label.offset[0], self._character_name_label.offset[1] +
+                    (self._character_name_label.rect.x, self._character_name_label.rect.y +
                      self._character_name_label.rect.height + indent))
 
         self._draw_character_skill_tree(screen, (0, 0))
@@ -80,17 +82,8 @@ class PalmtopUI:
         screen.blit(upgrade_points, (position[0] + 5, position[1] + surface.get_size()[1] + 10))
 
     def _draw_accept_dialog_box(self, screen: pygame.Surface, position: typing.Tuple[int, int]):
-        sure_label = Label(BlueBackgroundSprite().image, (self._draw_rect.width // 2, 35),
-                           text='Вы уверены?!', font_size=36)
-        sure_label.draw(screen, (position[0], position[1]))
-
-        info_label = Label(BlueBackgroundSprite().image, (self._draw_rect.width // 2, self._draw_rect.height // 2 - 60),
-                           text=self._picked_skill.description[self._picked_skill.current_level + 1], font_size=18)
-        info_label.draw(screen, (position[0], position[1] + sure_label.rect.height))
-
-        self._accept_button = Label(GreenBackgroundSprite().image, (self._draw_rect.width // 2, 30),
-                                    text='подтвердить', font_size=20)
-        self._accept_button.draw(screen, (position[0], position[1] + sure_label.rect.height + info_label.rect.height))
+        self._accept_skill_dialog.set_text(self._picked_skill.description[self._picked_skill.current_level + 1])
+        self._accept_skill_dialog.draw(screen, position)
 
     def _draw_exp_progress_bar(self, screen: pygame.Surface, position: typing.Tuple[int, int]):
         pygame.draw.rect(screen, pygame.Color('gray'), (position[0], position[1],
@@ -142,12 +135,14 @@ class PalmtopUI:
 
     def _upgrade_skill(self, mouse_pos: typing.Tuple[int, int]):
         if self._picked_skill is not None:
-            if self._accept_button is not None and self._accept_button.rect.collidepoint(mouse_pos):
+            if self._accept_skill_dialog.accept_button.rect.collidepoint(mouse_pos):
                 self._picked_skill.level_up()
                 self._picked_skill.apply_effect(self._current_player_entity)
                 self._current_player_entity.upgrade_points -= 1
                 print('cards:', self._current_player_entity.cards, 'attack:', self._current_player_entity.attack)
-            self._picked_skill = None
+                self._picked_skill = None
+            elif self._accept_skill_dialog.reject_button.rect.collidepoint(mouse_pos):
+                self._picked_skill = None
             return
 
         for skills in self._current_player_entity.skills.values():
