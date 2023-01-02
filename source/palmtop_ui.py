@@ -32,7 +32,7 @@ class PalmtopUI:
     def draw(self, screen: pygame.Surface):
         indent = 25
 
-        self._draw_character_switcher(screen, (screen.get_rect().center[0] * 1.5 - indent, 0))
+        self._draw_character_switcher(screen, (self._draw_rect.center[0] * 1.5 - indent, 0))
         # draw character
         screen.blit(pygame.transform.scale(self._current_player_entity.icon,
                                            (self._character_name_label.rect.width,
@@ -42,8 +42,10 @@ class PalmtopUI:
 
         self._draw_character_skill_tree(screen, (0, 0))
 
-        self._exit_button.draw(screen, (screen.get_rect().width - self._exit_button.rect.width, 0))
-        self._draw_inventory(screen, (0, screen.get_rect().height // 2 - 5))
+        self._exit_button.draw(screen, (self._draw_rect.width - self._exit_button.rect.width, 0))
+
+        self._draw_inventory(screen, (0, self._draw_rect.height // 2 - 5))
+        self._draw_character_equipment(screen, (self._draw_rect.width // 2 + indent, self._draw_rect.height // 2 - 5))
 
         self._draw_exp_progress_bar(screen,
                                     (self._character_name_label.rect.x,
@@ -107,6 +109,12 @@ class PalmtopUI:
     def _draw_inventory(self, screen: pygame.Surface, position: typing.Tuple[int, int]):
         self._inventory.draw_rect = pygame.Rect(*position, *self._inventory.draw_rect.size)
         self._inventory.draw(screen)
+
+    def _draw_character_equipment(self, screen: pygame.Surface, position: typing.Tuple[int, int], indent=25):
+        width, height = screen.get_size()
+        size = width // 2 - indent * 2 - self._exit_button.rect.width
+        self._current_player_entity.equipment.draw_rect = pygame.Rect(*position, size, size // 2)
+        self._current_player_entity.equipment.draw(screen)
 
     def get_click(self, mouse_pos: typing.Tuple[int, int]):
         self._switch_character(mouse_pos)
