@@ -1,16 +1,24 @@
 import pygame
 import typing
+from enum import Enum
+
+
+class ItemType(Enum):
+    Collectable = 0
+    Consumable = 1
+    Equipment = 2
 
 
 class Item(pygame.sprite.Sprite):
-
-    def __init__(self, sprite: pygame.sprite.Sprite, name: str, max_stack: int, current_stack: int = 0):
+    def __init__(self, sprite: pygame.sprite.Sprite, name: str, max_stack: int, item_type: ItemType,
+                 current_stack: int = 0):
         super(Item, self).__init__()
         self.image = sprite.image
         self.rect = self.image.get_rect()
         self._name = name
         self._max_stack = max_stack
         self._current_stack = current_stack
+        self._item_type = item_type
         self._is_full = False
 
     def add(self, value) -> int:
@@ -22,12 +30,15 @@ class Item(pygame.sprite.Sprite):
             return result
         return 0
 
-    def reduce(self, value):
-        if self._current_stack - value < 0:
-            raise ValueError('item stack can not be less than zero')
+    def reduce(self, value) -> int:
         self._current_stack -= value
-        if self._is_full:
+        if self._current_stack != self._max_stack:
             self._is_full = False
+        if self._current_stack < 0:
+            result = abs(self._current_stack)
+            self._current_stack = 0
+            return result
+        return 0
 
     def draw(self, screen: pygame.Surface, position: typing.Tuple[int, int]):
         self.rect.x, self.rect.y = position
@@ -58,6 +69,10 @@ class Item(pygame.sprite.Sprite):
     @property
     def is_full(self):
         return self._is_full
+
+    @property
+    def item_type(self):
+        return self._item_type
 
     def __repr__(self):
         return f'{self.__class__.__name__} x{self._current_stack}'
