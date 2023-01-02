@@ -107,3 +107,7 @@ class Inventory:
     @draw_rect.setter
     def draw_rect(self, value):
         self._draw_rect = value
+        self._item_size = (self._draw_rect.width // self._columns - self._indent,
+                           self._draw_rect.height // self._rows - ((self._current_page_label.rect.height + self._indent)
+                                                                   * int(self._max_pages != 1))
+                           // self._rows - self._indent)
