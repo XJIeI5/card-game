@@ -56,6 +56,19 @@ class Inventory:
         self._items.append(item)
         self._extend_to_item(item, count)
 
+    def remove_item(self, item_class: Item.__class__, count: int):
+        items = [i for i in self._items if isinstance(i, item_class)]
+        if not items:
+            raise ValueError(item_class + ' not in list')
+        if sum([i.current_stack for i in items]) < count:
+            raise ValueError('too much value to delete')
+
+        while count != 0:
+            count = items[-1].reduce(count)
+            if not items[-1].current_stack:
+                self._items.remove(items[-1])
+                items = items[:-1]
+
     def draw(self, screen: pygame.Surface):
         start, end = (self._rows * self._columns) * (self._current_page - 1),\
                      (self._rows * self._columns) + (self._rows * self._columns) * (self._current_page - 1)
