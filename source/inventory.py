@@ -24,7 +24,8 @@ class Inventory:
                                          text=str(self._current_page),  font_size=30)
 
         self._item_size = (self._draw_rect.width // self._columns - self._indent,
-                           self._draw_rect.height // self._rows - (self._current_page_label.rect.height + self._indent)
+                           self._draw_rect.height // self._rows - ((self._current_page_label.rect.height + self._indent)
+                                                                   * int(self._max_pages != 1))
                            // self._rows - self._indent)
 
     def extend_items(self, new_items: typing.Dict[Item.__class__, int]):
@@ -72,7 +73,8 @@ class Inventory:
                 item.draw(screen, (self._draw_rect.x + column * (self._item_size[0] + self._indent),
                                    self._draw_rect.y + row * (self._item_size[1] + self._indent)))
 
-        self._draw_ui(screen)
+        if self._max_pages != 1:
+            self._draw_ui(screen)
 
     def _draw_ui(self, screen: pygame.Surface, indent: int = 3):
         draw_y = self._draw_rect.y + self._rows * (self._item_size[1] + indent)
