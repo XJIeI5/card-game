@@ -26,8 +26,6 @@ class InBattleEntity(pygame.sprite.Sprite):
         self._dexterity = 0
         self._intelligence = 0
 
-        self._equipment = []
-
         self._cards: list[Card] = []   # a list of all cards in general
         self._good_stack: list[Card] = []   # a stack of cards to be placed in the hand
         self._discard_stack: list[Card] = []  # a stack of cards that were in the hand
