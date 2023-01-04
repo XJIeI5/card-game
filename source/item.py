@@ -1,6 +1,8 @@
 import pygame
 import typing
 from enum import Enum
+from source.ui import Label, ContextMenu
+from source.data.sprites.primitives import BlueBackgroundSprite, GrayBackgroundSprite
 
 
 class ItemType(Enum):
@@ -11,7 +13,7 @@ class ItemType(Enum):
 
 class Item(pygame.sprite.Sprite):
     def __init__(self, sprite: pygame.sprite.Sprite, name: str, max_stack: int, item_type: ItemType,
-                 current_stack: int = 0):
+                 current_stack: int = 0, action=None):
         super(Item, self).__init__()
         self.image = sprite.image
         self.rect = self.image.get_rect()
@@ -19,7 +21,14 @@ class Item(pygame.sprite.Sprite):
         self._max_stack = max_stack
         self._current_stack = current_stack
         self._item_type = item_type
+        self._action = action
         self._is_full = False
+
+        self._throw_button = Label(BlueBackgroundSprite().image, (0, 0),
+                                   text='выкинуть', font_size=20)
+        self._use_button = None if item_type != ItemType.Consumable else Label(BlueBackgroundSprite().image, (0, 0),
+                                                                               text='использовать', font_size=20)
+        self._context_menu = ContextMenu(GrayBackgroundSprite().image, (90, 40), [self._throw_button, self._use_button])
 
     def add(self, value) -> int:
         self._current_stack += value
@@ -73,6 +82,22 @@ class Item(pygame.sprite.Sprite):
     @property
     def item_type(self):
         return self._item_type
+
+    @property
+    def use_button(self):
+        return self._use_button
+
+    @property
+    def action(self):
+        return self._action
+
+    @property
+    def throw_button(self):
+        return self._throw_button
+
+    @property
+    def context_menu(self):
+        return self._context_menu
 
     def __repr__(self):
         return f'{self.__class__.__name__} x{self._current_stack}'
