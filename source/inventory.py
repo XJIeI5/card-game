@@ -2,8 +2,8 @@ import pygame
 import typing
 from source.data.sprites.primitives import PreviousButtonSprite, NextButtonSprite, BlueBackgroundSprite, \
     GrayBackgroundSprite
-from source.ui import Label
-from source.item import Item
+from source.ui import Label, ContextMenu
+from source.item import Item, ItemType
 
 
 class Inventory:
@@ -22,6 +22,9 @@ class Inventory:
         self._next_page_button = Label(NextButtonSprite().image, (20, 25))
         self._current_page_label = Label(BlueBackgroundSprite().image, (50, 25),
                                          text=str(self._current_page),  font_size=30)
+
+        self._acting_item: typing.Union[None, Item] = None
+        self._context_menu_pos: typing.Tuple[int, int] = (0, 0)
 
         self._item_size = (self._draw_rect.width // self._columns - self._indent,
                            self._draw_rect.height // self._rows - ((self._current_page_label.rect.height + self._indent)
@@ -56,18 +59,10 @@ class Inventory:
         self._items.append(item)
         self._extend_to_item(item, count)
 
-    def remove_item(self, item_class: Item.__class__, count: int):
-        items = [i for i in self._items if isinstance(i, item_class)]
-        if not items:
-            raise ValueError(item_class + ' not in list')
-        if sum([i.current_stack for i in items]) < count:
-            raise ValueError('too much value to delete')
-
-        while count != 0:
-            count = items[-1].reduce(count)
-            if not items[-1].current_stack:
-                self._items.remove(items[-1])
-                items = items[:-1]
+    def remove_item(self, item: Item, count: int):
+        item.reduce(count)
+        if item.current_stack <= 0:
+            self._items.remove(item)
 
     def draw(self, screen: pygame.Surface):
         start, end = (self._rows * self._columns) * (self._current_page - 1),\
@@ -101,8 +96,8 @@ class Inventory:
                                              self._next_page_button.rect.width // 2,
                                              draw_y))
 
-    def get_click(self, mouse_pos: typing.Tuple[int, int]):
-        self._switch_page(mouse_pos)
+    def get_click(self, event: pygame.event.Event):
+        self._switch_page(event.pos)
 
     def _switch_page(self, mouse_pos: typing.Tuple[int, int]):
         if self._next_page_button.rect.collidepoint(mouse_pos):
@@ -112,6 +107,26 @@ class Inventory:
         if self._previous_page_button.rect.collidepoint(mouse_pos):
             self._current_page -= 1 if self._current_page > 1 else 0
             self._current_page_label.set_text(str(self._current_page))
+
+    def get_cell(self, mouse_pos: typing.Tuple[int, int]) -> typing.Union[None, typing.Tuple[int, int]]:
+        on_board = mouse_pos[0] - self._draw_rect.x,  mouse_pos[1] - self._draw_rect.y
+        on_items = on_board[0], on_board[1]
+        item = on_items[1] // self._item_size[1], on_items[0] // self._item_size[0]
+        if item[0] < 0 or item[1] < 0 or item[0] > self._rows or item[1] > self._columns:
+            return None
+        return on_items[1] // self._item_size[1], on_items[0] // self._item_size[0]
+
+    @property
+    def columns(self):
+        return self._columns
+
+    @property
+    def rows(self):
+        return self._rows
+
+    @property
+    def items(self):
+        return self._items
 
     @property
     def draw_rect(self):
