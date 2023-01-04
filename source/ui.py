@@ -88,3 +88,22 @@ class AcceptDialog(pygame.sprite.Sprite):
     @property
     def reject_button(self):
         return self._reject_button
+
+
+class ContextMenu(pygame.sprite.Sprite):
+    def __init__(self, image: pygame.Surface, size: typing.Tuple[int, int], actions: typing.List[Label]):
+        super(ContextMenu, self).__init__()
+        self.image = pygame.transform.scale(image, size)
+        self.rect = self.image.get_rect()
+        self._actions = [i for i in actions if i is not None]
+        self._indent = 3
+
+    def draw(self, screen: pygame.Surface, position: typing.Tuple[int, int]):
+        self.rect.x, self.rect.y = position
+        action_height = self.rect.height // len(self._actions)
+
+        for index, action in enumerate(self._actions):
+            action.rect = pygame.Rect(0, 0, self.rect.width, action_height)
+            action.image = pygame.transform.scale(self.image, (self.rect.width, action_height))
+            action.draw(screen, (self.rect.x, self.rect.y + (self._indent + action_height) * index))
+            print(index, ':', self.rect.x, self.rect.y + (self._indent + action_height) * index)
