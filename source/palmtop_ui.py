@@ -5,7 +5,7 @@ from source.data.sprites.primitives import NextButtonSprite, PreviousButtonSprit
     GreenBackgroundSprite
 from source.skill import Skill
 from source.inventory import Inventory
-from source.items_bundle import RockItem, GlassItem
+from source.item import Item, ItemType
 
 
 class PalmtopUI:
@@ -30,6 +30,9 @@ class PalmtopUI:
 
         self._picked_skill: typing.Union[None, Skill] = None
         self._inventory = inventory
+
+        self._acting_item: typing.Union[None, Item] = None
+        self._context_menu_pos: typing.Tuple[int, int] = (0, 0)
 
     def draw(self, screen: pygame.Surface):
         indent = 25
@@ -56,6 +59,9 @@ class PalmtopUI:
 
         if self._picked_skill:
             self._draw_accept_dialog_box(screen, (self._draw_rect.width // 4, self._draw_rect.height // 4))
+
+        if self._acting_item is not None:
+            self._acting_item.context_menu.draw(screen, self._context_menu_pos)
 
     def _draw_character_switcher(self, screen: pygame.Surface, center: typing.Tuple[int, int], indent=25):
         self._character_name_label.draw(screen, (center[0] - self._character_name_label.rect.width // 2, center[1]))
@@ -109,10 +115,11 @@ class PalmtopUI:
         self._current_player_entity.equipment.draw_rect = pygame.Rect(*position, size, size // 2)
         self._current_player_entity.equipment.draw(screen)
 
-    def get_click(self, mouse_pos: typing.Tuple[int, int]):
-        self._switch_character(mouse_pos)
-        self._upgrade_skill(mouse_pos)
-        self._inventory.get_click(mouse_pos)
+    def get_click(self, event: pygame.event.Event):
+        self._switch_character(event.pos)
+        self._upgrade_skill(event.pos)
+        self._inventory.get_click(event)
+        self._act_with_items(event.pos)
 
     def _switch_character(self, mouse_pos: typing.Tuple[int, int]):
         if self._next_player_button.rect.collidepoint(mouse_pos):
@@ -154,6 +161,28 @@ class PalmtopUI:
                     self._picked_skill = None
                 if self._current_player_entity.upgrade_points <= 0:
                     self._picked_skill = None
+
+    def _act_with_items(self, mouse_pos: typing.Tuple[int, int]):
+        if self._acting_item is not None:
+            result = self._process_action_clicks(mouse_pos)
+            if result:
+                self._acting_item = None
+                return
+        item_pos = self._inventory.get_cell(mouse_pos)
+        if item_pos is None or item_pos[1] + item_pos[0] * self._inventory.columns >= len(self._inventory.items):
+            return
+        self._acting_item = self._inventory.items[item_pos[1] + item_pos[0] * self._inventory.columns]
+        self._context_menu_pos = mouse_pos
+
+    def _process_action_clicks(self, mouse_pos: typing.Tuple[int, int]) -> bool:
+        if self._acting_item.throw_button.rect.collidepoint(mouse_pos):
+            self._inventory.items.remove(self._acting_item)
+            return True
+        if self._acting_item.item_type == ItemType.Consumable and self._acting_item.use_button.rect.collidepoint(mouse_pos):
+            self._acting_item.action(self._current_player_entity)
+            self._inventory.remove_item(self._acting_item.__class__, 1)
+            return True
+        return False
 
     @property
     def exit_button(self):
