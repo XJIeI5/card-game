@@ -1,4 +1,4 @@
-from source.data.sprites.primitives import BlueBackgroundSprite, GreenBackgroundSprite
+from source.data.sprites.primitives import BlueBackgroundSprite, GreenBackgroundSprite, RedBackgroundSprite
 from source.item import Item, ItemType
 
 
@@ -10,3 +10,9 @@ class RockItem(Item):
 class GlassItem(Item):
     def __init__(self):
         super(GlassItem, self).__init__(GreenBackgroundSprite(), 'стекло', 2, ItemType.Collectable)
+
+
+class HealingSerumItem(Item):
+    def __init__(self):
+        super(HealingSerumItem, self).__init__(RedBackgroundSprite(), 'сыворотка лечения', 10, ItemType.Consumable,
+                                               action=lambda x: x.apply_hp(10))
