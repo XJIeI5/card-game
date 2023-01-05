@@ -1,11 +1,35 @@
 import pygame
 import typing
-from source.ui import Label, AcceptDialog
-from source.data.sprites.primitives import NextButtonSprite, PreviousButtonSprite, BlueBackgroundSprite,\
-    GreenBackgroundSprite
+from source.ui import Label, AcceptDialog, ContextMenu
+from source.data.sprites.primitives import NextButtonSprite, PreviousButtonSprite, BlueBackgroundSprite, \
+    GrayBackgroundSprite
 from source.skill import Skill
 from source.inventory import Inventory
-from source.item import Item, ItemType
+from source.item import Item, ItemType, EquipmentType
+
+
+class ItemMenageMenu(ContextMenu):
+    def __init__(self, item: Item):
+        self._throw_button = Label(BlueBackgroundSprite().image, (0, 0), text='выкинуть', font_size=20)
+        self._use_button = None if item.item_type != ItemType.Consumable else\
+            Label(BlueBackgroundSprite().image, (0, 0), text='использовать', font_size=20)
+        self._equip_button = None if item.item_type.__class__ != EquipmentType else\
+            Label(BlueBackgroundSprite().image, (0, 0), text='экипировать', font_size=20)
+
+        super(ItemMenageMenu, self).__init__(GrayBackgroundSprite().image, (90, 30),
+                                             [self._throw_button, self._use_button, self._equip_button])
+
+    @property
+    def use_button(self):
+        return self._use_button
+
+    @property
+    def equip_button(self):
+        return self._equip_button
+
+    @property
+    def throw_button(self):
+        return self._throw_button
 
 
 class PalmtopUI:
@@ -32,6 +56,7 @@ class PalmtopUI:
         self._inventory = inventory
 
         self._acting_item: typing.Union[None, Item] = None
+        self._acting_item_menu: typing.Union[None, ItemMenageMenu] = None
         self._context_menu_pos: typing.Tuple[int, int] = (0, 0)
 
     def draw(self, screen: pygame.Surface):
@@ -61,7 +86,7 @@ class PalmtopUI:
             self._draw_accept_dialog_box(screen, (self._draw_rect.width // 4, self._draw_rect.height // 4))
 
         if self._acting_item is not None:
-            self._acting_item.context_menu.draw(screen, self._context_menu_pos)
+            self._acting_item_menu.draw(screen, self._context_menu_pos)
 
     def _draw_character_switcher(self, screen: pygame.Surface, center: typing.Tuple[int, int], indent=25):
         self._character_name_label.draw(screen, (center[0] - self._character_name_label.rect.width // 2, center[1]))
@@ -94,7 +119,7 @@ class PalmtopUI:
     def _draw_exp_progress_bar(self, screen: pygame.Surface, position: typing.Tuple[int, int]):
         pygame.draw.rect(screen, pygame.Color('gray'), (position[0], position[1],
                                                         self._character_name_label.rect.width, 10))
-        one_piece = self._character_name_label.rect.width //\
+        one_piece = self._character_name_label.rect.width // \
                     self._current_player_entity.exp_amount_to_raise_level[self._current_player_entity.level]
         pygame.draw.rect(screen, pygame.Color('green'), (*position,
                                                          one_piece * self._current_player_entity.exp, 10))
@@ -112,8 +137,11 @@ class PalmtopUI:
     def _draw_character_equipment(self, screen: pygame.Surface, position: typing.Tuple[int, int], indent=25):
         width, height = screen.get_size()
         size = width // 2 - indent * 2 - self._exit_button.rect.width
-        self._current_player_entity.equipment.draw_rect = pygame.Rect(*position, size, size // 2)
-        self._current_player_entity.equipment.draw(screen)
+        self._current_player_entity.main_weapon.draw_rect = pygame.Rect(*position, size // 2, size // 2)
+        self._current_player_entity.main_weapon.draw(screen)
+        self._current_player_entity.secondary_weapon.draw_rect = pygame.Rect(position[0] + size // 2, position[1],
+                                                                             size // 2, size // 2)
+        self._current_player_entity.secondary_weapon.draw(screen)
 
     def get_click(self, event: pygame.event.Event):
         self._switch_character(event.pos)
@@ -167,21 +195,35 @@ class PalmtopUI:
             result = self._process_action_clicks(mouse_pos)
             if result:
                 self._acting_item = None
+                self._acting_item_menu = None
                 return
         item_pos = self._inventory.get_cell(mouse_pos)
         if item_pos is None or item_pos[1] + item_pos[0] * self._inventory.columns >= len(self._inventory.items):
             return
         self._acting_item = self._inventory.items[item_pos[1] + item_pos[0] * self._inventory.columns]
+        self._acting_item_menu = ItemMenageMenu(self._acting_item)
         self._context_menu_pos = mouse_pos
 
     def _process_action_clicks(self, mouse_pos: typing.Tuple[int, int]) -> bool:
-        if self._acting_item.throw_button.rect.collidepoint(mouse_pos):
+        if self._acting_item_menu.throw_button.rect.collidepoint(mouse_pos):
             self._inventory.items.remove(self._acting_item)
             return True
-        if self._acting_item.item_type == ItemType.Consumable and self._acting_item.use_button.rect.collidepoint(mouse_pos):
+        if self._acting_item.item_type == ItemType.Consumable and \
+                self._acting_item_menu.use_button.rect.collidepoint(mouse_pos):
             self._acting_item.action(self._current_player_entity)
-            self._inventory.remove_item(self._acting_item.__class__, 1)
+            self._inventory.remove_item(self._acting_item, 1)
             return True
+        if self._acting_item.item_type.__class__ == EquipmentType and \
+                self._acting_item_menu.equip_button.rect.collidepoint(mouse_pos):
+            leading_weapon = self._current_player_entity.main_weapon\
+                if self._acting_item.item_type == EquipmentType.MainWeapon\
+                else self._current_player_entity.secondary_weapon
+            old_weapon = leading_weapon.items.copy()
+            leading_weapon.extend_items({self._acting_item.__class__: 1})
+            self._inventory.extend_items({i.__class__: 1 for i in old_weapon})
+            self._inventory.remove_item(self._acting_item, 1)
+            return True
+
         return False
 
     @property
