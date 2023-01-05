@@ -1,3 +1,4 @@
+import typing
 from enum import Enum
 import pygame
 import random
@@ -60,10 +61,23 @@ class InBattleEntity(pygame.sprite.Sprite):
         if self._hp > self._max_hp:
             self._hp = self._max_hp
 
-    def extend_cards(self, cards: list):
+    def extend_cards(self, cards_class: typing.List):
         """gets a list of classes inherited from Card, instances of which will be added to self._cards"""
-        self._cards.extend([i() for i in cards])
+        self._cards.extend([i() for i in cards_class])
         self.set_deck()
+
+    def remove_cards(self, cards_class: typing.List):
+        """remove instance of cards_class from self._cards"""
+        to_remove = []
+        for card in self._cards:
+            if card.__class__ in cards_class:
+                cards_class.remove(card.__class__)
+                to_remove.append(card)
+                if not cards_class:
+                    break
+
+        for card in to_remove:
+            self._cards.remove(card)
 
     def set_deck(self):
         """init the good_stack and discard_stack"""
@@ -75,7 +89,7 @@ class InBattleEntity(pygame.sprite.Sprite):
         self._good_stack.remove(cards)
         self._discard_stack.extend(cards)
 
-    def get_cards(self) -> list[Card]:
+    def get_cards(self) -> typing.List[Card]:
         """return 6 cards from deck"""
         if len(self._good_stack) < 6:
             return self._good_stack[:len(self._good_stack)]
