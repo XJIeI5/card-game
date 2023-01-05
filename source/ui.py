@@ -100,10 +100,8 @@ class ContextMenu(pygame.sprite.Sprite):
 
     def draw(self, screen: pygame.Surface, position: typing.Tuple[int, int]):
         self.rect.x, self.rect.y = position
-        action_height = self.rect.height // len(self._actions)
 
         for index, action in enumerate(self._actions):
-            action.rect = pygame.Rect(0, 0, self.rect.width, action_height)
-            action.image = pygame.transform.scale(self.image, (self.rect.width, action_height))
-            action.draw(screen, (self.rect.x, self.rect.y + (self._indent + action_height) * index))
-            print(index, ':', self.rect.x, self.rect.y + (self._indent + action_height) * index)
+            action.rect = pygame.Rect(0, 0, self.rect.width, self.rect.height)
+            action.image = pygame.transform.scale(self.image, (self.rect.width, self.rect.height))
+            action.draw(screen, (self.rect.x, self.rect.y + (self._indent + self.rect.height) * index))
