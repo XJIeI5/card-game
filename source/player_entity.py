@@ -46,7 +46,8 @@ class PlayerEntity(InBattleEntity):
         self._upgrade_points = 0
         self._exp = 0
         self._exp_amount_to_raise_level = [0, 5, 10, 20, 40, 60, 100]
-        self._equipment: Inventory = Inventory(pygame.Rect(0, 0, 0, 0), 1, 2, 1)
+        self._main_weapon: Inventory = Inventory(pygame.Rect(0, 0, 0, 0), 1, 1, 1)
+        self._secondary_weapon: Inventory = Inventory(pygame.Rect(0, 0, 0, 0), 1, 1, 1)
 
         for index, skills in self._speciality.value.SkillTree.items():
             for skill_class in skills:
@@ -86,5 +87,9 @@ class PlayerEntity(InBattleEntity):
         return self._exp_amount_to_raise_level
 
     @property
-    def equipment(self):
-        return self._equipment
+    def main_weapon(self):
+        return self._main_weapon
+
+    @property
+    def secondary_weapon(self):
+        return self._secondary_weapon
