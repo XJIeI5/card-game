@@ -10,6 +10,25 @@ class Alignment(Enum):
     Right = 2
 
 
+def blit_text(screen: pygame.Surface, draw_rect: pygame.Rect, text: str, font_size: int,
+              color: pygame.Color = pygame.Color('black'), alignment: Alignment = Alignment.Center):
+    lines = text.split('\n')
+    font = pygame.font.Font(None, font_size)
+    line_height = font.size('A')[1]
+    for index, line in enumerate(lines):
+        text_surface = font.render(line, True, color)
+        if alignment == Alignment.Center:
+            place = text_surface.get_rect(center=draw_rect.center)
+        elif alignment == Alignment.Left:
+            place = text_surface.get_rect(topleft=draw_rect.topleft)
+            place.x += 5
+        else:
+            place = text_surface.get_rect(topright=draw_rect.topright)
+            place.x -= 5
+        screen.blit(text_surface, (place.x, draw_rect.center[1] - draw_rect.height // 4 +
+                                   line_height * index))  #(place.x, screen.get_rect().center[1] - screen.get_rect().height // 4)))
+
+
 class Label(pygame.sprite.Sprite):
     def __init__(self, image: pygame.Surface, size: typing.Tuple[int, int], text: str = '', font_size: int = 12,
                  alignment=Alignment.Center):
@@ -23,16 +42,7 @@ class Label(pygame.sprite.Sprite):
     def draw(self, screen: pygame.Surface, position: typing.Tuple[int, int]):
         self.rect.x, self.rect.y = position
         screen.blit(self.image, position)
-        text = pygame.font.Font(None, self._font_size).render(self._text, True, pygame.Color('white'))
-        if self._alignment == Alignment.Center:
-            place = text.get_rect(center=self.rect.center)
-        elif self._alignment == Alignment.Left:
-            place = text.get_rect(topleft=self.rect.topleft)
-            place.x += 5
-        else:
-            place = text.get_rect(topright=self.rect.topright)
-            place.x -= 5
-        screen.blit(text, (place.x, self.rect.center[1] - self.rect.height // 4))
+        blit_text(screen, self.rect, self._text, self._font_size, color=pygame.Color('white'))
 
     def set_text(self, new_text: str):
         self._text = new_text
