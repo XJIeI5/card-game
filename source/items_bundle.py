@@ -1,5 +1,5 @@
 from source.data.sprites.primitives import BlueBackgroundSprite, GreenBackgroundSprite, RedBackgroundSprite
-from source.item import Item, ItemType
+from source.item import Item, ItemType, Equipment, EquipmentType
 from source import card_bundle
 
 
@@ -19,9 +19,9 @@ class HealingSerumItem(Item):
                                                action=lambda x: x.apply_hp(10))
 
 
-class SmallPistolItem(Item):
+class SmallPistolItem(Equipment):
     def __init__(self):
-        super(SmallPistolItem, self).__init__(GreenBackgroundSprite(), 'маленький пистолет', 1,
-                                              ItemType.Equipment.value.MainWeapon,
-                                              action=lambda x: x.extend_cards([card_bundle.FastShoot] * 2),
-                                              undo_action=lambda x: x.remove_cards([card_bundle.FastShoot] * 2))
+        super(SmallPistolItem, self).__init__(GreenBackgroundSprite(), 'маленький пистолет',
+                                              EquipmentType.MainWeapon,
+                                              cards=[card_bundle.FastShoot, card_bundle.FastShoot],
+                                              characteristics={'attack': 5})
