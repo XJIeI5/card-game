@@ -5,7 +5,7 @@ from source.data.sprites.primitives import NextButtonSprite, PreviousButtonSprit
     GrayBackgroundSprite
 from source.skill import Skill
 from source.inventory import Inventory
-from source.item import Item, ItemType, EquipmentType
+from source.item import Item, ItemType, Equipment, EquipmentType
 
 
 class ItemMenageMenu(ContextMenu):
@@ -13,7 +13,7 @@ class ItemMenageMenu(ContextMenu):
         self._throw_button = Label(BlueBackgroundSprite().image, (0, 0), text='выкинуть', font_size=20)
         self._use_button = None if item.item_type != ItemType.Consumable else\
             Label(BlueBackgroundSprite().image, (0, 0), text='использовать', font_size=20)
-        self._equip_button = None if item.item_type.__class__ != EquipmentType else\
+        self._equip_button = None if item.item_type != ItemType.Equipment else\
             Label(BlueBackgroundSprite().image, (0, 0), text='экипировать', font_size=20)
 
         super(ItemMenageMenu, self).__init__(GrayBackgroundSprite().image, (90, 30),
@@ -50,7 +50,8 @@ class PalmtopUI:
                                            text=self._current_player_entity.name, font_size=24)
         self._accept_skill_dialog = AcceptDialog(BlueBackgroundSprite().image,
                                                  (self._draw_rect.width // 2, self._draw_rect.height // 2),
-                                                 title='Вы уверены?!', font_size=28, info_font_size=18)
+                                                 title='Вы уверены?!', font_size=28, info_font_size=28)
+        self._info_dialog: typing.Union[None, AcceptDialog] = None
 
         self._picked_skill: typing.Union[None, Skill] = None
         self._inventory = inventory
@@ -87,6 +88,10 @@ class PalmtopUI:
 
         if self._acting_item is not None:
             self._acting_item_menu.draw(screen, self._context_menu_pos)
+
+        if self._info_dialog is not None:
+            self._info_dialog.draw(screen, (self._draw_rect.width // 4,
+                                            self._draw_rect.height // 4 - self._accept_skill_dialog.rect.height // 4))
 
     def _draw_character_switcher(self, screen: pygame.Surface, center: typing.Tuple[int, int], indent=25):
         self._character_name_label.draw(screen, (center[0] - self._character_name_label.rect.width // 2, center[1]))
@@ -144,10 +149,14 @@ class PalmtopUI:
         self._current_player_entity.secondary_weapon.draw(screen)
 
     def get_click(self, event: pygame.event.Event):
+        if not self._inventory.draw_rect.collidepoint(event.pos):
+            self._acting_item = None
         self._switch_character(event.pos)
         self._upgrade_skill(event.pos)
         self._inventory.get_click(event)
         self._act_with_items(event.pos)
+        self._set_equipment_info_menu(event.pos)
+        self._set_player_entity_info_menu(event.pos)
 
     def _switch_character(self, mouse_pos: typing.Tuple[int, int]):
         if self._next_player_button.rect.collidepoint(mouse_pos):
@@ -213,10 +222,11 @@ class PalmtopUI:
             self._acting_item.action(self._current_player_entity)
             self._inventory.remove_item(self._acting_item, 1)
             return True
-        if self._acting_item.item_type.__class__ == EquipmentType and \
+        if self._acting_item.item_type == ItemType.Equipment and \
                 self._acting_item_menu.equip_button.rect.collidepoint(mouse_pos):
-            leading_weapon = self._current_player_entity.main_weapon\
-                if self._acting_item.item_type == EquipmentType.MainWeapon\
+            leading_weapon = self._current_player_entity.main_weapon \
+                if isinstance(self._acting_item,
+                              Equipment) and self._acting_item.equipment_type == EquipmentType.MainWeapon \
                 else self._current_player_entity.secondary_weapon
             old_weapon = leading_weapon.items.copy()
             leading_weapon.extend_items({self._acting_item.__class__: 1})
@@ -225,6 +235,42 @@ class PalmtopUI:
             return True
 
         return False
+
+    def _set_equipment_info_menu(self, mouse_pos: typing.Tuple[int, int]):
+        if self._info_dialog and\
+            (self._info_dialog.accept_button.rect.collidepoint(mouse_pos) or
+             self._info_dialog.reject_button.rect.collidepoint(mouse_pos)):
+            self._info_dialog = None
+            return
+        self._set_main_weapon_info_menu(mouse_pos)
+        self._set_secondary_weapon_info_menu(mouse_pos)
+
+    def _set_main_weapon_info_menu(self, mouse_pos: typing.Tuple[int, int]):
+        if self._current_player_entity.main_weapon.draw_rect.collidepoint(mouse_pos):
+            if not self._current_player_entity.main_weapon.items:
+                return
+            weapon = self._current_player_entity.main_weapon.items[0]
+            images = [card_class().image for card_class in weapon.cards]
+            description = weapon.name + '\n' + "\n".join([f"{i} - {j}" for i, j in weapon.characteristics.items()])
+            self._info_dialog = AcceptDialog(BlueBackgroundSprite().image,
+                                             (self._draw_rect.width // 2, self._draw_rect.height // 1.5),
+                                             'информация', description, font_size=28, info_font_size=24,
+                                             images=images)
+
+    def _set_secondary_weapon_info_menu(self, mouse_pos: typing.Tuple[int, int]):
+        if self._current_player_entity.secondary_weapon.draw_rect.collidepoint(mouse_pos):
+            if not self._current_player_entity.secondary_weapon.items:
+                return
+            weapon = self._current_player_entity.secondary_weapon.items[0]
+            images = [card_class().image for card_class in weapon.cards]
+            description = weapon.name + '\n' + "\n".join([f"{i} - {j}" for i, j in weapon.characteristics.items()])
+            self._info_dialog = AcceptDialog(BlueBackgroundSprite().image,
+                                             (self._draw_rect.width // 2, self._draw_rect.height // 1.5),
+                                             'информация', description, font_size=28, info_font_size=24,
+                                             images=images)
+
+    def _set_player_entity_info_menu(self, mouse_pos: typing.Tuple[int, int]):
+        pass
 
     @property
     def exit_button(self):
