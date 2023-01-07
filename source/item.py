@@ -1,8 +1,7 @@
 import pygame
 import typing
 from enum import Enum
-from source.ui import Label, ContextMenu
-from source.data.sprites.primitives import BlueBackgroundSprite, GrayBackgroundSprite
+from source.card import Card
 
 
 class EquipmentType(Enum):
@@ -13,7 +12,7 @@ class EquipmentType(Enum):
 class ItemType(Enum):
     Collectable = 0
     Consumable = 1
-    Equipment = EquipmentType
+    Equipment = 2
 
 
 class Item(pygame.sprite.Sprite):
@@ -93,3 +92,38 @@ class Item(pygame.sprite.Sprite):
 
     def __repr__(self):
         return f'{self.__class__.__name__} x{self._current_stack}'
+
+
+class Equipment(Item):
+    def __init__(self, sprite: pygame.sprite.Sprite, name: str, equipment_type: EquipmentType,
+                 cards: typing.List[Card.__class__], characteristics: typing.Dict[str, int], current_stack: int = 0):
+        super(Equipment, self).__init__(sprite, name, 1, ItemType.Equipment, current_stack)
+        self._equipment_type = equipment_type
+        self._cards = cards
+        self._characteristics = characteristics
+
+    @property
+    def action(self):
+        actions = [lambda x: x.extend_cards([self._cards])]
+        for key, value in self._characteristics:
+            actions.append(lambda x: setattr(x, key, getattr(x, key) + value))
+        return lambda x: [action(x) for action in actions]
+
+    @property
+    def undo_action(self):
+        actions = [lambda x: x.remove_cards([self._cards])]
+        for key, value in self._characteristics:
+            actions.append(lambda x: setattr(x, key, getattr(x, key) - value))
+        return lambda x: [action(x) for action in actions]
+
+    @property
+    def cards(self):
+        return self._cards
+
+    @property
+    def characteristics(self):
+        return self._characteristics
+
+    @property
+    def equipment_type(self):
+        return self._equipment_type
