@@ -26,7 +26,7 @@ def blit_text(screen: pygame.Surface, draw_rect: pygame.Rect, text: str, font_si
             place = text_surface.get_rect(topright=draw_rect.topright)
             place.x -= 5
         screen.blit(text_surface, (place.x, draw_rect.center[1] - draw_rect.height // 4 +
-                                   line_height * index))  #(place.x, screen.get_rect().center[1] - screen.get_rect().height // 4)))
+                                   line_height * index))  # (place.x, screen.get_rect().center[1] - screen.get_rect().height // 4)))
 
 
 class Label(pygame.sprite.Sprite):
@@ -53,8 +53,11 @@ class Label(pygame.sprite.Sprite):
 
 class AcceptDialog(pygame.sprite.Sprite):
     def __init__(self, image: pygame.Surface, size: typing.Tuple[int, int], title: str = '', text: str = '',
-                 font_size: int = 12, info_font_size: int = 12, alignment: Alignment = Alignment.Center):
+                 font_size: int = 12, info_font_size: int = 12, alignment: Alignment = Alignment.Center,
+                 images=None):
         super(AcceptDialog, self).__init__()
+        if images is None:
+            images = []
         self.image = pygame.transform.scale(image, size)
         self.rect = self.image.get_rect()
         self._title = title
@@ -62,6 +65,8 @@ class AcceptDialog(pygame.sprite.Sprite):
         self._font_size = font_size
         self._info_font_size = info_font_size
         self._alignment = alignment
+        self._images: typing.List[pygame.Surface] = images
+        self._images_indent = 10
 
         self._accept_button = Label(GreenBackgroundSprite().image, (self.rect.width // 2, self.rect.height // 10),
                                     text='OK', font_size=self._font_size)
@@ -80,10 +85,23 @@ class AcceptDialog(pygame.sprite.Sprite):
                            text=self._text, font_size=self._info_font_size)
         info_label.draw(screen, (self.rect.x, self.rect.y + title_label.rect.height))
 
-        self._accept_button.draw(screen, (self.rect.width,
-                                          self.rect.y + self.rect.height - self._accept_button.rect.height))
-        self._reject_button.draw(screen, (self.rect.width // 2,
-                                          self.rect.y + self.rect.height - self._reject_button.rect.height))
+        if self._images:
+            image_size = self.rect.width // len(self._images) - self._images_indent, info_label.rect.height // 2
+            for index, image in enumerate(self._images):
+                image_width, image_height = image.get_size()
+                image = pygame.transform.scale(image, (image_size[0] if image_width > image_size[0] else image_width,
+                                                       image_size[1] if image_height > image_size[1] else image_height))
+                screen.blit(image,
+                            (self._images_indent // 2 + position[0] + (image_size[0] + self._images_indent) * index,
+                             info_label.rect.center[1]))
+
+        # buttons
+        self._accept_button.draw(screen,
+                                 (self.rect.x,
+                                  self.rect.y + self.rect.height - self._accept_button.rect.height))
+        self._reject_button.draw(screen,
+                                 (self.rect.x + self.rect.width // 2,
+                                  self.rect.y + self.rect.height - self._reject_button.rect.height))
 
     def set_text(self, new_text: str):
         self._text = new_text
