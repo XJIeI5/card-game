@@ -37,5 +37,5 @@ class FirstAid(Card):
 
 class FastShoot(Card):
     def __init__(self):
-        super(FastShoot, self).__init__(NoneSprite(), 'беглый выстрел', 'стреляет на 1.5X урона', CardType.Attack,
+        super(FastShoot, self).__init__(NoneSprite(), 'беглый выстрел', 'стреляет на\n1.5X урона', CardType.Attack,
                                         ActionAreaType.OneEnemy, lambda y, x: x.apply_damage(int(y.attack * 1.5)))
