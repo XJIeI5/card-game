@@ -19,13 +19,13 @@ class RushAttack(Card):
 
 class FastPunch(Card):
     def __init__(self):
-        super(FastPunch, self).__init__(NoneSprite(), 'быстрый удар', 'сносит врага на X хп', CardType.Attack,
+        super(FastPunch, self).__init__(NoneSprite(), 'быстрый удар', 'сносит врага\nна X хп', CardType.Attack,
                                         ActionAreaType.OneEnemy, lambda y, x: x.apply_damage(y.attack * 1))
 
 
 class ShieldRestruct(Card):
     def __init__(self):
-        super(ShieldRestruct, self).__init__(NoneSprite(), 'пересборка', 'подзарежает щит на 10', CardType.Defend,
+        super(ShieldRestruct, self).__init__(NoneSprite(), 'пересборка', 'подзарежает\nщит на 10', CardType.Defend,
                                              ActionAreaType.SelfAction, lambda y, x: x.apply_shield(10))
         
         
@@ -33,3 +33,9 @@ class FirstAid(Card):
     def __init__(self):
         super(FirstAid, self).__init__(NoneSprite(), 'первая помощь', 'лечит на 5', CardType.Buff,
                                        ActionAreaType.OneAlly, lambda y, x: x.apply_hp(5))
+
+
+class FastShoot(Card):
+    def __init__(self):
+        super(FastShoot, self).__init__(NoneSprite(), 'беглый выстрел', 'стреляет на\n1.5X урона', CardType.Attack,
+                                        ActionAreaType.OneEnemy, lambda y, x: x.apply_damage(int(y.attack * 1.5)))

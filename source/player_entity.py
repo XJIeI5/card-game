@@ -2,6 +2,7 @@ import pygame
 from enum import Enum
 from source.in_battle_entity import InBattleEntity
 from source import skills_bundle
+from source.inventory import Inventory
 
 
 class MedicSpeciality:
@@ -45,6 +46,8 @@ class PlayerEntity(InBattleEntity):
         self._upgrade_points = 0
         self._exp = 0
         self._exp_amount_to_raise_level = [0, 5, 10, 20, 40, 60, 100]
+        self._main_weapon: Inventory = Inventory(pygame.Rect(0, 0, 0, 0), 1, 1, 1)
+        self._secondary_weapon: Inventory = Inventory(pygame.Rect(0, 0, 0, 0), 1, 1, 1)
 
         for index, skills in self._speciality.value.SkillTree.items():
             for skill_class in skills:
@@ -82,3 +85,11 @@ class PlayerEntity(InBattleEntity):
     @property
     def exp_amount_to_raise_level(self):
         return self._exp_amount_to_raise_level
+
+    @property
+    def main_weapon(self):
+        return self._main_weapon
+
+    @property
+    def secondary_weapon(self):
+        return self._secondary_weapon

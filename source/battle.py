@@ -21,8 +21,16 @@ class Battle:
         self._is_win = False
         self._is_lose = False
 
+        self.apply_equipment_effects()
         self.init_move_order()
         self.next_action()
+
+    def apply_equipment_effects(self):
+        for character in self._player_entities:
+            if character.main_weapon.items:
+                character.main_weapon.items[0].action(character)
+            if character.secondary_weapon.items:
+                character.secondary_weapon.items[0].action(character)
 
     def init_move_order(self) -> None:
         order = sorted(self._player_entities + self._enemy_entities, key=lambda x: x.initiative)[::-1]
@@ -165,6 +173,7 @@ class Battle:
                         break
             if all([i.is_dead for i in self._enemy_entities]):
                 self._is_win = True
+                self.end_battle()
 
     def pick_card(self, mouse_pos: typing.Tuple[int, int]) -> None:
         for card in self._current_cards:
@@ -177,6 +186,16 @@ class Battle:
                     self._picked_card = None
                     return
                 self._picked_card = card
+
+    def end_battle(self):
+        self._undo_equipment_effects()
+
+    def _undo_equipment_effects(self):
+        for character in self._player_entities:
+            if character.main_weapon.items:
+                character.main_weapon.items[0].undo_action(character)
+            if character.secondary_weapon.items:
+                character.secondary_weapon.items[0].undo_action(character)
 
     @property
     def is_win(self):
