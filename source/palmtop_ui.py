@@ -1,6 +1,6 @@
 import pygame
 import typing
-from source.ui import Label, AcceptDialog, ContextMenu
+from source.ui import Label, AcceptDialog, ContextMenu, Alignment
 from source.data.sprites.primitives import NextButtonSprite, PreviousButtonSprite, BlueBackgroundSprite, \
     GrayBackgroundSprite
 from source.skill import Skill
@@ -48,6 +48,9 @@ class PalmtopUI:
         self._previous_player_button = Label(PreviousButtonSprite().image, (30, 27))
         self._character_name_label = Label(BlueBackgroundSprite().image, (200, 30),
                                            text=self._current_player_entity.name, font_size=24)
+        self._character_icon_label = Label(self._current_player_entity.icon,
+                                           (self._character_name_label.rect.width,
+                                            self._character_name_label.rect.width))
         self._accept_skill_dialog = AcceptDialog(BlueBackgroundSprite().image,
                                                  (self._draw_rect.width // 2, self._draw_rect.height // 2),
                                                  title='Вы уверены?!', font_size=28, info_font_size=28)
@@ -65,11 +68,8 @@ class PalmtopUI:
 
         self._draw_character_switcher(screen, (self._draw_rect.center[0] * 1.5 - indent, 0))
         # draw character
-        screen.blit(pygame.transform.scale(self._current_player_entity.icon,
-                                           (self._character_name_label.rect.width,
-                                            self._character_name_label.rect.width)),
-                    (self._character_name_label.rect.x, self._character_name_label.rect.y +
-                     self._character_name_label.rect.height + indent))
+        self._character_icon_label.draw(screen, (self._character_name_label.rect.x, self._character_name_label.rect.y +
+                                                 self._character_name_label.rect.height + indent))
 
         self._draw_character_skill_tree(screen, (0, 0))
 
@@ -176,6 +176,7 @@ class PalmtopUI:
                 else self._player_entities[-1]
 
             self._character_name_label.set_text(self._current_player_entity.name)
+        self._character_icon_label.set_image(self._current_player_entity.icon)
 
     def _upgrade_skill(self, mouse_pos: typing.Tuple[int, int]):
         if self._picked_skill is not None:
@@ -270,7 +271,15 @@ class PalmtopUI:
                                              images=images)
 
     def _set_player_entity_info_menu(self, mouse_pos: typing.Tuple[int, int]):
-        pass
+        if self._character_icon_label.rect.collidepoint(mouse_pos):
+            images = [card.image for card in self._current_player_entity.cards]
+            description = f'level    -  {self._current_player_entity.level}\n' \
+                          f'attack -  {self._current_player_entity.attack}\n' \
+                          f'hp        -  {self._current_player_entity.hp} / {self._current_player_entity.max_hp}'
+            self._info_dialog = AcceptDialog(BlueBackgroundSprite().image,
+                                             (self._draw_rect.width // 2, self._draw_rect.height // 1.5),
+                                             'информация', description, images=images, font_size=28, info_font_size=24,
+                                             alignment=Alignment.Left)
 
     @property
     def exit_button(self):
