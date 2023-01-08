@@ -192,5 +192,21 @@ class InBattleEntity(pygame.sprite.Sprite):
     def name(self):
         return self._name
 
+    @property
+    def hp(self):
+        return self._hp
+
+    @property
+    def max_hp(self):
+        return self._max_hp
+
+    @property
+    def shields(self):
+        return self._shields
+
+    @property
+    def max_shields(self):
+        return self._max_shields
+
     def __repr__(self):
         return f'{self.__class__.__name__} {self._name}'
