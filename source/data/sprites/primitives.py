@@ -47,6 +47,16 @@ class NPCCellSprite(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
 
 
+class StartCellSprite(pygame.sprite.Sprite):
+    def __init__(self):
+        super(StartCellSprite, self).__init__()
+        self.image = pygame.Surface((500, 500))
+        self.image.fill(pygame.Color(197, 208, 230))
+        self.rect = self.image.get_rect()
+        pygame.draw.rect(self.image, pygame.Color('black'),
+                         (self.rect.x + 25, self.rect.y + 25, self.rect.width - 100, self.rect.height - 100))
+
+
 class NextButtonSprite(pygame.sprite.Sprite):
     def __init__(self):
         super(NextButtonSprite, self).__init__()
@@ -99,6 +109,14 @@ class GrayBackgroundSprite(pygame.sprite.Sprite):
         self.image = pygame.Surface((500, 500))
         self.image.fill(pygame.Color('gray'))
         self.rect = self.image.get_rect()
+
+
+class PlanetIconSprite(pygame.sprite.Sprite):
+    def __init__(self):
+        super(PlanetIconSprite, self).__init__()
+        self.image = pygame.Surface((500, 500))
+        self.rect = self.image.get_rect()
+        pygame.draw.circle(self.image, pygame.Color('red'), self.rect.center, self.rect.width // 2)
 
 
 class ScaledSprite(pygame.sprite.Sprite):
