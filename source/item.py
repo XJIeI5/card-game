@@ -16,12 +16,13 @@ class ItemType(Enum):
 
 
 class Item(pygame.sprite.Sprite):
-    def __init__(self, sprite: pygame.sprite.Sprite, name: str, max_stack: int, item_type: ItemType,
+    def __init__(self, sprite: pygame.sprite.Sprite, name: str, description: str, max_stack: int, item_type: ItemType,
                  current_stack: int = 0, action=None, undo_action=None):
         super(Item, self).__init__()
         self.image = sprite.image
         self.rect = self.image.get_rect()
         self._name = name
+        self._description = description
         self._max_stack = max_stack
         self._current_stack = current_stack
         self._item_type = item_type
@@ -67,6 +68,10 @@ class Item(pygame.sprite.Sprite):
         return self._name
 
     @property
+    def description(self):
+        return self._description
+
+    @property
     def max_stack(self):
         return self._max_stack
 
@@ -95,9 +100,9 @@ class Item(pygame.sprite.Sprite):
 
 
 class Equipment(Item):
-    def __init__(self, sprite: pygame.sprite.Sprite, name: str, equipment_type: EquipmentType,
+    def __init__(self, sprite: pygame.sprite.Sprite, name: str, description: str, equipment_type: EquipmentType,
                  cards: typing.List[Card.__class__], characteristics: typing.Dict[str, int], current_stack: int = 0):
-        super(Equipment, self).__init__(sprite, name, 1, ItemType.Equipment, current_stack)
+        super(Equipment, self).__init__(sprite, name, description, 1, ItemType.Equipment, current_stack)
         self._equipment_type = equipment_type
         self._cards = cards
         self._characteristics = characteristics
