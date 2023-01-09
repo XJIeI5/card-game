@@ -22,10 +22,10 @@ class PlanetChoose:
 
     def place_planet_buttons(self, radius: int):
         for index, place_button in enumerate(self._planet_buttons):
-            place_button.rect.center = (radius * (index + 1) * math.cos(random.randint(0, 360))
-                                        + self._draw_rect.width // 2,
-                                        radius * (index + 1) * math.sin(random.randint(0, 360))
-                                        + self._draw_rect.height // 2)
+            angle = random.randint(0, 360)
+            x, y = math.cos(angle), math.sin(angle)
+            place_button.rect.center = (radius * (index + 1) * x + self._draw_rect.width // 2,
+                                        radius * (index + 1) * y + self._draw_rect.height // 2)
 
     def draw(self, screen: pygame.Surface):
         for place_button in self._planet_buttons:
