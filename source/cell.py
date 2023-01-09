@@ -8,6 +8,7 @@ class CellModifierType(Enum):
     EmptyCell = primitives.EmptyCellSprite()
     EnemyCell = primitives.EnemyCellSprite()
     NPCCell = primitives.NPCCellSprite()
+    StartCell = primitives.StartCellSprite()
 
 
 class Cell:
