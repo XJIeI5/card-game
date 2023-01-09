@@ -15,9 +15,11 @@ class ItemMenageMenu(ContextMenu):
             Label(BlueBackgroundSprite().image, (0, 0), text='использовать', font_size=20)
         self._equip_button = None if item.item_type != ItemType.Equipment else\
             Label(BlueBackgroundSprite().image, (0, 0), text='экипировать', font_size=20)
+        self._info_button = Label(BlueBackgroundSprite().image, (0, 0), text='инфо', font_size=20)
 
         super(ItemMenageMenu, self).__init__(GrayBackgroundSprite().image, (90, 30),
-                                             [self._throw_button, self._use_button, self._equip_button])
+                                             [self._throw_button, self._use_button,
+                                              self._equip_button, self._info_button])
 
     @property
     def use_button(self):
@@ -30,6 +32,10 @@ class ItemMenageMenu(ContextMenu):
     @property
     def throw_button(self):
         return self._throw_button
+
+    @property
+    def info_button(self):
+        return self._info_button
 
 
 class PalmtopUI:
@@ -218,6 +224,11 @@ class PalmtopUI:
         if self._acting_item_menu.throw_button.rect.collidepoint(mouse_pos):
             self._inventory.items.remove(self._acting_item)
             return True
+        if self._acting_item_menu.info_button.rect.collidepoint(mouse_pos):
+            self._info_dialog = AcceptDialog(BlueBackgroundSprite().image,
+                                             (self._draw_rect.width // 2, self._draw_rect.height // 1.5),
+                                             'информация', self._acting_item.description, font_size=28,
+                                             info_font_size=24)
         if self._acting_item.item_type == ItemType.Consumable and \
                 self._acting_item_menu.use_button.rect.collidepoint(mouse_pos):
             self._acting_item.action(self._current_player_entity)
