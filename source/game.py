@@ -2,13 +2,14 @@ import pygame
 import sys
 import typing
 from enum import Enum
-from source.game_screen import GameMapScreen, BattleScreen, PalmtopUIScreen, PlanetChooseScreen, HubScreen
+from source.game_screen import GameMapScreen, BattleScreen, PalmtopUIScreen, PlanetChooseScreen, HubScreen, StoreScreen
 from source.player_entity import PlayerEntity, PlayerSpeciality
 from source.cell import Cell, CellModifierType
 from source.card_bundle import FastPunch, ShieldRestruct
 from source.data.sprites.primitives import PlayerCellSprite, ScaledSprite
 from source.inventory import Inventory
 from source.items_bundle import RockItem, GlassItem, HealingSerumItem, SmallPistolItem
+from source.store import Money
 
 
 class GameState(Enum):
@@ -17,6 +18,7 @@ class GameState(Enum):
     Palmtop = 2
     PlanetChoose = 3
     Hub = 4
+    Store = 5
 
 
 class TestSprite(pygame.sprite.Sprite):
@@ -36,6 +38,7 @@ class Game:
         self._screen.fill(pygame.Color('black'))
         self._fps = 60
         self._state = GameState.Hub
+        self._money = Money(100)
         cards = [ShieldRestruct, FastPunch]
         self._player_entities = [PlayerEntity(ScaledSprite(TestSprite()), 'A person', 50, 25, 10, 1,
                                               PlayerSpeciality.Medic, 1),
@@ -53,6 +56,7 @@ class Game:
         self._palmtop_screen: typing.Union[None, PalmtopUIScreen] = None
         self._planet_choose_screen = PlanetChooseScreen(size)
         self._hub_screen = HubScreen(size)
+        self._store_screen = StoreScreen(size, self._money)
 
     def run(self) -> None:
         while True:
@@ -66,6 +70,8 @@ class Game:
                 self.planet_choose_view()
             elif self._state == GameState.Hub:
                 self.hub_view()
+            elif self._state == GameState.Store:
+                self.store_view()
 
             self._clock.tick(self._fps)
             pygame.display.flip()
@@ -178,6 +184,24 @@ class Game:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if self._hub_screen.hub.planet_choose_button.rect.collidepoint(event.pos):
                     self._state = GameState.PlanetChoose
+                elif self._hub_screen.hub.store_button.rect.collidepoint(event.pos):
+                    self._state = GameState.Store
 
         self._screen.fill(pygame.Color('black'))
         self._hub_screen.draw(self._screen)
+
+    def store_view(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                self._store_screen.store.get_click(event)
+
+                # state changing
+                if self._store_screen.exit_button.rect.collidepoint(event.pos):
+                    self._state = GameState.Hub
+
+        self._screen.fill(pygame.Color('black'))
+        self._store_screen.draw(self._screen)

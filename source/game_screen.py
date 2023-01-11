@@ -11,6 +11,7 @@ from source.palmtop_ui import PalmtopUI
 from source.planet_choose import PlanetChoose
 from source.hub import Hub
 from source.data.sprites.primitives import BlueBackgroundSprite
+from source.store import Store, Money
 
 
 class GameScreen(pygame.Surface):
@@ -129,3 +130,21 @@ class HubScreen(GameScreen):
     @property
     def hub(self):
         return self._hub
+
+
+class StoreScreen(GameScreen):
+    def __init__(self, size: typing.Tuple[int, int], money: Money):
+        super(StoreScreen, self).__init__(size)
+
+        self._store = Store(pygame.rect.Rect(0, 0, *size), 5, 5, 2, money)
+
+    def draw(self, screen: pygame.Surface):
+        self._store.draw(screen)
+
+    @property
+    def store(self):
+        return self._store
+
+    @property
+    def exit_button(self):
+        return self._store.exit_button
