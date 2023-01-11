@@ -87,14 +87,14 @@ class Inventory:
     def _draw_ui(self, screen: pygame.Surface, indent: int = 3):
         draw_y = self._draw_rect.y + self._rows * (self._item_size[1] + indent)
 
-        self._current_page_label.draw(screen, (self._draw_rect.width // 2 - self._current_page_label.rect.width // 2,
-                                               draw_y))
-        self._previous_page_button.draw(screen, (self._draw_rect.width // 2 - self._current_page_label.rect.width // 2 -
-                                                 self._previous_page_button.rect.width * 1.5,
-                                                 draw_y))
-        self._next_page_button.draw(screen, (self._draw_rect.width // 2 + self._current_page_label.rect.width // 2 +
-                                             self._next_page_button.rect.width // 2,
-                                             draw_y))
+        self._current_page_label.draw(screen, (self._draw_rect.x + self._draw_rect.width // 2
+                                               - self._current_page_label.rect.width // 2, draw_y))
+        self._previous_page_button.draw(screen, (self._draw_rect.x + self._draw_rect.width // 2
+                                                 - self._current_page_label.rect.width // 2 -
+                                                 self._previous_page_button.rect.width * 1.5, draw_y))
+        self._next_page_button.draw(screen, (self._draw_rect.x + self._draw_rect.width // 2
+                                             + self._current_page_label.rect.width // 2 +
+                                             self._next_page_button.rect.width // 2, draw_y))
 
     def get_click(self, event: pygame.event.Event):
         self._switch_page(event.pos)
