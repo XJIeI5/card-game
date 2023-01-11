@@ -16,14 +16,16 @@ class ItemType(Enum):
 
 
 class Item(pygame.sprite.Sprite):
-    def __init__(self, sprite: pygame.sprite.Sprite, name: str, max_stack: int, item_type: ItemType,
-                 current_stack: int = 0, action=None, undo_action=None):
+    def __init__(self, sprite: pygame.sprite.Sprite, name: str, description: str, max_stack: int, item_type: ItemType,
+                 price: int, current_stack: int = 0, action=None, undo_action=None):
         super(Item, self).__init__()
         self.image = sprite.image
         self.rect = self.image.get_rect()
         self._name = name
+        self._description = description
         self._max_stack = max_stack
         self._current_stack = current_stack
+        self._price = price
         self._item_type = item_type
         self._action = action
         self._undo_action = undo_action
@@ -67,6 +69,10 @@ class Item(pygame.sprite.Sprite):
         return self._name
 
     @property
+    def description(self):
+        return self._description
+
+    @property
     def max_stack(self):
         return self._max_stack
 
@@ -90,14 +96,19 @@ class Item(pygame.sprite.Sprite):
     def undo_action(self):
         return self._undo_action
 
+    @property
+    def price(self):
+        return self._price
+
     def __repr__(self):
         return f'{self.__class__.__name__} x{self._current_stack}'
 
 
 class Equipment(Item):
-    def __init__(self, sprite: pygame.sprite.Sprite, name: str, equipment_type: EquipmentType,
-                 cards: typing.List[Card.__class__], characteristics: typing.Dict[str, int], current_stack: int = 0):
-        super(Equipment, self).__init__(sprite, name, 1, ItemType.Equipment, current_stack)
+    def __init__(self, sprite: pygame.sprite.Sprite, name: str, description: str, equipment_type: EquipmentType,
+                 cards: typing.List[Card.__class__], characteristics: typing.Dict[str, int], price: int,
+                 current_stack: int = 0):
+        super(Equipment, self).__init__(sprite, name, description, 1, ItemType.Equipment, price, current_stack)
         self._equipment_type = equipment_type
         self._cards = cards
         self._characteristics = characteristics

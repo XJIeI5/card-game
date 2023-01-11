@@ -8,6 +8,10 @@ from source.enemies import Beetle
 from source.ui import Label, Alignment
 from source.inventory import Inventory
 from source.palmtop_ui import PalmtopUI
+from source.planet_choose import PlanetChoose
+from source.hub import Hub
+from source.data.sprites.primitives import BlueBackgroundSprite
+from source.store import Store, Money
 
 
 class GameScreen(pygame.Surface):
@@ -19,23 +23,27 @@ class GameScreen(pygame.Surface):
 
 
 class GameMapScreen(GameScreen):
-    def __init__(self, size: typing.Tuple[int, int]):
+    CellDict = {CellModifierType.EmptyCell: GenerateMod(GenerateModType.Base, 1),
+                CellModifierType.EnemyCell: GenerateMod(GenerateModType.Probability, 1)}
+    MapSize = (50, 50)
+
+    def __init__(self, size: typing.Tuple[int, int], game_map: PlayerViewMap):
         super(GameMapScreen, self).__init__(size)
 
-        self._player_view_map = PlayerViewMap(pygame.Rect(0, 0, *size), None)
-        cell_dict = {CellModifierType.EmptyCell: GenerateMod(GenerateModType.Base, 1),
-                     CellModifierType.EnemyCell: GenerateMod(GenerateModType.Probability, 1)}
-        self._player_view_map.generate_map((50, 50), cell_dict)
+        self._player_view_map = game_map
 
-        image = pygame.Surface((100, 100))
-        image.fill(pygame.Color('blue'))
-        self._palmtop_button = Label(image, (40, 30), text='КПК', font_size=16)
+        self._palmtop_button = Label(BlueBackgroundSprite().image, (40, 30), text='КПК', font_size=16)
+        self._is_draw_hub_button = False
+        self._hub_button = Label(BlueBackgroundSprite().image, (80, 30), text='Вернуться', font_size=16)
 
     def draw(self, screen: pygame.Surface):
         surface = pygame.Surface((screen.get_rect().width - self._palmtop_button.rect.width, screen.get_rect().height))
         self._player_view_map.draw(surface)
         screen.blit(surface, (0, 0))
         self._palmtop_button.draw(screen, (screen.get_rect().width - self._palmtop_button.rect.width, 0))
+        if self._is_draw_hub_button:
+            place = self._hub_button.image.get_rect(center=(screen.get_rect().center[0], self._hub_button.rect.height))
+            self._hub_button.draw(screen, place.topleft)
 
     @property
     def game_map(self):
@@ -44,6 +52,18 @@ class GameMapScreen(GameScreen):
     @property
     def palmtop_button(self):
         return self._palmtop_button
+
+    @property
+    def hub_button(self):
+        return self._hub_button
+
+    @property
+    def is_draw_hub_button(self):
+        return self._is_draw_hub_button
+
+    @is_draw_hub_button.setter
+    def is_draw_hub_button(self, value):
+        self._is_draw_hub_button = value
 
 
 class BattleScreen(GameScreen):
@@ -71,9 +91,60 @@ class PalmtopUIScreen(GameScreen):
     def draw(self, screen: pygame.Surface):
         self._palmtop_ui.draw(screen)
 
-    def get_click(self, mouse_pos: typing.Tuple[int, int]):
-        self._palmtop_ui.get_click(mouse_pos)
+    @property
+    def palmtop_ui(self):
+        return self._palmtop_ui
 
     @property
     def exit_button(self):
         return self._palmtop_ui.exit_button
+
+
+class PlanetChooseScreen(GameScreen):
+    def __init__(self, size: typing.Tuple[int, int]):
+        super(PlanetChooseScreen, self).__init__(size)
+
+        self._planet_choose = PlanetChoose(pygame.Rect(0, 0, *size))
+
+    def draw(self, screen: pygame.Surface):
+        self._planet_choose.draw(screen)
+
+    @property
+    def planet_choose(self):
+        return self._planet_choose
+
+    @property
+    def exit_button(self):
+        return self._planet_choose.exit_button
+
+
+class HubScreen(GameScreen):
+    def __init__(self, size: typing.Tuple[int, int]):
+        super(HubScreen, self).__init__(size)
+
+        self._hub = Hub(pygame.Rect(0, 0, *size))
+
+    def draw(self, screen: pygame.Surface):
+        self._hub.draw(screen)
+
+    @property
+    def hub(self):
+        return self._hub
+
+
+class StoreScreen(GameScreen):
+    def __init__(self, size: typing.Tuple[int, int], money: Money):
+        super(StoreScreen, self).__init__(size)
+
+        self._store = Store(pygame.rect.Rect(0, 0, *size), 5, 5, 2, money)
+
+    def draw(self, screen: pygame.Surface):
+        self._store.draw(screen)
+
+    @property
+    def store(self):
+        return self._store
+
+    @property
+    def exit_button(self):
+        return self._store.exit_button

@@ -15,6 +15,7 @@ class PlayerViewMap(GameMap):
     def __init__(self, rect: pygame.rect.Rect, fill: CellModifierType):
         super(PlayerViewMap, self).__init__(rect, fill)
         self._player_position: typing.Tuple[int, int] = None
+        self._start_cells: typing.List[Cell] = []
         self._opened_cells: typing.List[typing.List[Cell]] = []
         self._game_map_image: pygame.Surface = pygame.Surface((self._draw_rect.width, self._draw_rect.height))
 
@@ -88,12 +89,20 @@ class PlayerViewMap(GameMap):
         """** description **
         sets the player on the map"""
 
+        is_search = True
         for i in self._cells:
             for j in i:
                 if j.modifier is None:
                     continue
-                self._player_position = [j.y, j.x]
+                self._player_position = [j.x, j.y]
+                is_search = False
                 break
+            if not is_search:
+                break
+        x, y = self._player_position
+        self._cells[y][x] = Cell(x, y, CellModifierType.StartCell)
+        self._start_cells.append(self._cells[y][x])
+        print(*self._cells, sep='\n')
 
     def move_player(self, offset: typing.Tuple[int, int]) -> None:
         """** args **
@@ -117,3 +126,7 @@ class PlayerViewMap(GameMap):
     @property
     def player_position(self):
         return self._player_position
+
+    @property
+    def start_cells(self):
+        return self._start_cells

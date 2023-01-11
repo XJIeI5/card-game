@@ -31,18 +31,19 @@ def blit_text(screen: pygame.Surface, draw_rect: pygame.Rect, text: str, font_si
 
 class Label(pygame.sprite.Sprite):
     def __init__(self, image: pygame.Surface, size: typing.Tuple[int, int], text: str = '', font_size: int = 12,
-                 alignment=Alignment.Center):
+                 alignment=Alignment.Center, color: pygame.Color = pygame.Color('white')):
         super(Label, self).__init__()
         self.image = pygame.transform.scale(image, size)
         self.rect = self.image.get_rect()
         self._text = text
         self._font_size = font_size
         self._alignment = alignment
+        self._color = color
 
     def draw(self, screen: pygame.Surface, position: typing.Tuple[int, int]):
         self.rect.x, self.rect.y = position
         screen.blit(self.image, position)
-        blit_text(screen, self.rect, self._text, self._font_size, color=pygame.Color('white'),
+        blit_text(screen, self.rect, self._text, self._font_size, color=self._color,
                   alignment=self._alignment)
 
     def set_text(self, new_text: str):
@@ -51,8 +52,11 @@ class Label(pygame.sprite.Sprite):
     def set_font_size(self, new_font_size: int):
         self._font_size = new_font_size
 
-    def set_image(self, image: pygame.Surface):
-        self.image = pygame.transform.scale(image, self.rect.size)
+    def set_image(self, new_image: pygame.Surface):
+        self.image = pygame.transform.scale(new_image, self.rect.size)
+
+    def set_color(self, new_color: pygame.Color):
+        self._color = new_color
 
 
 class AcceptDialog(pygame.sprite.Sprite):
