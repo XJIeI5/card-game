@@ -20,7 +20,8 @@ class PlayerViewMap(GameMap):
         self._game_map_image: pygame.Surface = pygame.Surface((self._draw_rect.width, self._draw_rect.height))
 
     def save_to_txt(self, file_name: str):
-        cell_dict = {None: ' ', CellModifierType.EmptyCell: '#', CellModifierType.EnemyCell: 'e'}
+        cell_dict = {None: ' ', CellModifierType.EmptyCell: '#', CellModifierType.EnemyCell: 'e',
+                     CellModifierType.StartCell: 's'}
         opened_dict = {-1: '-', 0: '+'}
         with open(file_name, mode='w+', encoding='utf-8') as file:
             for i in range(len(self._cells)):
@@ -31,7 +32,8 @@ class PlayerViewMap(GameMap):
                 file.write('\n')
 
     def load_from_txt(self, file_name: str) -> None:
-        cell_dict = {' ': None, '#': CellModifierType.EmptyCell, 'e': CellModifierType.EnemyCell}
+        cell_dict = {' ': None, '#': CellModifierType.EmptyCell, 'e': CellModifierType.EnemyCell,
+                     's': CellModifierType.StartCell}
         opened_dict = {'-': -1, '+': 0}
         with open(file_name, mode='r', encoding='utf-8') as file:
             lines = file.readlines()
@@ -89,20 +91,14 @@ class PlayerViewMap(GameMap):
         """** description **
         sets the player on the map"""
 
-        is_search = True
-        for i in self._cells:
-            for j in i:
-                if j.modifier is None:
-                    continue
-                self._player_position = [j.x, j.y]
-                is_search = False
-                break
-            if not is_search:
-                break
+        for i in range(len(self._cells)):
+            if self._cells[i][i].modifier is None:
+                continue
+            self._player_position = [i, i]
+            break
         x, y = self._player_position
         self._cells[y][x] = Cell(x, y, CellModifierType.StartCell)
         self._start_cells.append(self._cells[y][x])
-        print(*self._cells, sep='\n')
 
     def move_player(self, offset: typing.Tuple[int, int]) -> None:
         """** args **
