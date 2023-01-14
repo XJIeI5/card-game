@@ -28,9 +28,18 @@ class Hub:
         self._quit_button = Label(BlueBackgroundSprite().image, (0, 0), text='выйти', font_size=30)
 
         self._file_choose_menu: typing.Union[None, ContextMenu] = None
-        self._file_0_button = Label(BlueBackgroundSprite().image, (0, 0), text='файл 0', font_size=30)
-        self._file_1_button = Label(BlueBackgroundSprite().image, (0, 0), text='файл 1', font_size=30)
-        self._file_2_button = Label(BlueBackgroundSprite().image, (0, 0), text='файл 2', font_size=30)
+        self._file_0_button = Label(BlueBackgroundSprite().image, (0, 0), text='файл 0  -  Нет', font_size=30)
+        self._file_1_button = Label(BlueBackgroundSprite().image, (0, 0), text='файл 1  -  Нет', font_size=30)
+        self._file_2_button = Label(BlueBackgroundSprite().image, (0, 0), text='файл 2  -  Нет', font_size=30)
+        self.init_file_button()
+
+    def init_file_button(self):
+        if os.path.exists('./source/data/save/save_0'):
+            self._file_0_button.set_text('файл 0  -  Есть')
+        if os.path.exists('./source/data/save/save_1'):
+            self._file_1_button.set_text('файл 1  -  Есть')
+        if os.path.exists('./source/data/save/save_2'):
+            self._file_2_button.set_text('файл 2  -  Есть')
 
     def draw(self, screen: pygame.Surface):
         place = self._planet_choose_button.image.get_rect(center=self._draw_rect.center)

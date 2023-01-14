@@ -208,6 +208,7 @@ class Game:
                             self.save_all_files('./source/data/save/save_2')
                         else:
                             self.load_all_files('./source/data/save/save_2')
+                    self._hub_screen.hub.init_file_button()
                 self._hub_screen.hub.get_click(event)
 
         self._screen.fill(pygame.Color('black'))
