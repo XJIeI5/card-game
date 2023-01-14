@@ -1,9 +1,11 @@
 import pygame
 import typing
+import json
 from source.data.sprites.primitives import PreviousButtonSprite, NextButtonSprite, BlueBackgroundSprite, \
     GrayBackgroundSprite
 from source.ui import Label, ContextMenu
 from source.item import Item, ItemType
+from source import items_bundle
 
 
 class Inventory:
@@ -30,6 +32,19 @@ class Inventory:
                            self._draw_rect.height // self._rows - ((self._current_page_label.rect.height + self._indent)
                                                                    * int(self._max_pages != 1))
                            // self._rows - self._indent)
+
+    def save_to_json(self, directory_path: str):
+        data = {index: [item.__class__.__name__, item.current_stack] for index, item in enumerate(self._items)}
+        with open(directory_path + '/inventory.json', mode='w', encoding='utf-8') as file:
+            json.dump(data, file, indent=4)
+
+    def load_from_json(self, directory_path: str):
+        with open(directory_path + '/inventory.json', mode='r', encoding='utf-8') as file:
+            data = json.load(file)
+        for index, item_list in data.items():
+            item_name, current_stack = item_list
+            item_class = getattr(items_bundle, item_name)
+            self.extend_items({item_class: current_stack})
 
     def extend_items(self, new_items: typing.Dict[Item.__class__, int]):
         for item in self._items:
