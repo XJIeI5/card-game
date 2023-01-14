@@ -43,4 +43,4 @@ class Cell:
         screen.blit(sprite_image, (rect.x, rect.y))
 
     def __repr__(self):
-        return f'Mod: {self._modifier_type} in Cell at: {self._y}, {self._x}'
+        return f'{self._modifier_type}: {self._x}, {self._y}'

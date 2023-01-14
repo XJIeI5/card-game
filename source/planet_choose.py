@@ -1,3 +1,4 @@
+import os
 import pygame
 import typing
 import math
@@ -15,7 +16,8 @@ class PlanetChoose:
         self._planet_buttons: typing.List[Label] = [Label(PlanetIconSprite().image, (50, 50),
                                                           text=str(i + 1), font_size=36, color=pygame.Color('black'))
                                                     for i in range(3)]
-        self._planet_game_maps = {i: None for i in range(len(self._planet_buttons))}
+        self._planet_game_maps: typing.Dict[int, typing.Union[None, PlayerViewMap]] =\
+            {i: None for i in range(len(self._planet_buttons))}
 
         self._exit_button = Label(BlueBackgroundSprite().image, (40, 30), text='Назад')
         self.place_planet_buttons(100)
@@ -26,6 +28,27 @@ class PlanetChoose:
             x, y = math.cos(angle), math.sin(angle)
             place_button.rect.center = (radius * (index + 1) * x + self._draw_rect.width // 2,
                                         radius * (index + 1) * y + self._draw_rect.height // 2)
+
+    def save_maps(self, directory_name: str):
+        if not os.path.exists(directory_name + '/maps'):
+            os.makedirs(directory_name + '/maps')
+
+        for index, game_map in self._planet_game_maps.items():
+            file_name = directory_name + f'/maps/map_{index}.txt'
+            if game_map is None:
+                open(file_name, mode='w').close()
+            else:
+                game_map.save_to_txt(file_name)
+
+    def load_maps(self, directory_name: str):
+        filenames = next(os.walk(directory_name + '/maps'), (None, None, []))[2]
+        for index, file_name in enumerate(filenames):
+            if os.stat(directory_name + '/maps/' + file_name).st_size == 0:
+                self._planet_game_maps[index] = None
+            else:
+                player_view_map = PlayerViewMap(self._draw_rect, None)
+                player_view_map.load_from_txt(directory_name + '/maps/' + file_name)
+                self._planet_game_maps[index] = player_view_map
 
     def draw(self, screen: pygame.Surface):
         for place_button in self._planet_buttons:

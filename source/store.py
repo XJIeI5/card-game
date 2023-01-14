@@ -11,6 +11,15 @@ class Money:
     def __init__(self, value: int):
         self._value = value
 
+    def save_to_txt(self, directory_name: str):
+        with open(directory_name + '/money.txt', mode='w', encoding='utf-8') as file:
+            file.write(str(self._value))
+
+    def load_from_txt(self, directory_name: str):
+        with open(directory_name + '/money.txt', mode='r', encoding='utf-8') as file:
+            value = file.read()
+            self._value = int(value)
+
     def append(self, count: int):
         self._value += count
 
