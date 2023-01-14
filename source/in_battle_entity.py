@@ -13,7 +13,7 @@ class HighlightType(Enum):
 
 class InBattleEntity(pygame.sprite.Sprite):
     def __init__(self, sprite: pygame.sprite.Sprite, name: str, max_hp: int, max_shields: int,
-                 attack: int, level: int, initiative: int):
+                 attack: int, level: int, initiative: int, entity_type: str):
         super(InBattleEntity, self).__init__()
         self._image = sprite.image
         self._name = name
@@ -26,6 +26,8 @@ class InBattleEntity(pygame.sprite.Sprite):
         self._strength = 0
         self._dexterity = 0
         self._intelligence = 0
+        self._entity_type = entity_type
+        self._equipment = []
 
         self._cards: list[Card] = []   # a list of all cards in general
         self._good_stack: list[Card] = []   # a stack of cards to be placed in the hand
@@ -36,6 +38,7 @@ class InBattleEntity(pygame.sprite.Sprite):
         self._max_shields = max_shields
         self._shields = max_shields
         self._is_dead = False
+        self._is_poisoned = False
 
     def apply_damage(self, damage: int):
         remaining_damage = damage - self._shields
@@ -45,7 +48,6 @@ class InBattleEntity(pygame.sprite.Sprite):
             self._hp -= remaining_damage
         if self._hp <= 0:
             self._is_dead = True
-
         if self._shields < 0:
             self._shields = 0
         if self._hp < 0:
@@ -60,6 +62,9 @@ class InBattleEntity(pygame.sprite.Sprite):
         self._hp += hp
         if self._hp > self._max_hp:
             self._hp = self._max_hp
+
+    def reduce_damage(self, coef: int):
+        self._attack *= coef
 
     def extend_cards(self, cards_class: typing.List):
         """gets a list of classes inherited from Card, instances of which will be added to self._cards"""
@@ -193,6 +198,8 @@ class InBattleEntity(pygame.sprite.Sprite):
         return self._name
 
     @property
+    def entity_type(self):
+        return self.entity_type
     def hp(self):
         return self._hp
 
