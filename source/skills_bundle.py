@@ -1,11 +1,11 @@
 from source.skill import Skill
-from source.card_bundle import FirstAid
+from source.card_bundle import HealChar
 
 
 class FirstAidSkill(Skill):
     def __init__(self):
-        level_effects = [lambda y: y.extend_cards([FirstAid]),
-                         lambda y: y.extend_cards([FirstAid]),
+        level_effects = [lambda y: y.extend_cards([HealChar]),
+                         lambda y: y.extend_cards([HealChar]),
                          lambda y: setattr(y, 'attack', y.attack + 10)]
         description = {1: 'добавляет карту Первая помощь\n(лечит 5 здоровья)',
                        2: 'добавляет карту Первая помощь\n(лечит 5 здоровья)',

@@ -24,5 +24,5 @@ class SmallPistolItem(Equipment):
     def __init__(self):
         super(SmallPistolItem, self).__init__(GreenBackgroundSprite(), 'маленький пистолет',
                                               'может проделать дырок во враге', EquipmentType.MainWeapon, price=250,
-                                              cards=[card_bundle.FastShoot, card_bundle.FastShoot],
+                                              cards=[card_bundle.ShootEMGAttack, card_bundle.ShootEMGAttack],
                                               characteristics={'attack': 5})
