@@ -122,10 +122,10 @@ class PlayerEntity(InBattleEntity):
         self._secondary_weapon = Inventory(pygame.Rect(0, 0, 0, 0), 1, 1, 1)
         if data['secondary_weapon']:
             self._secondary_weapon.extend_items({getattr(items_bundle, data['secondary_weapon']): 1})
-        self._speciality = MedicSpeciality if data['speciality'] == 'MedicSpeciality' else\
-            TankSpeciality if data['speciality'] == 'TankSpeciality' else\
-                EngineerSpeciality if data['speciality'] == 'EngineerSpeciality' else\
-                    ShooterSpeciality
+        self._speciality = PlayerSpeciality.Medic if data['speciality'] == 'MedicSpeciality' else\
+            PlayerSpeciality.Tank if data['speciality'] == 'TankSpeciality' else\
+                PlayerSpeciality.Engineer if data['speciality'] == 'EngineerSpeciality' else\
+                    PlayerSpeciality.Shooter
         for index, skills in data['skills'].items():
             line = []
             for skill_name in skills:
