@@ -1,3 +1,4 @@
+import typing
 from enum import Enum
 import pygame
 import random
@@ -65,10 +66,23 @@ class InBattleEntity(pygame.sprite.Sprite):
     def reduce_damage(self, coef: int):
         self._attack *= coef
 
-    def extend_cards(self, cards: list):
+    def extend_cards(self, cards_class: typing.List):
         """gets a list of classes inherited from Card, instances of which will be added to self._cards"""
-        self._cards.extend([i() for i in cards])
+        self._cards.extend([i() for i in cards_class])
         self.set_deck()
+
+    def remove_cards(self, cards_class: typing.List):
+        """remove instance of cards_class from self._cards"""
+        to_remove = []
+        for card in self._cards:
+            if card.__class__ in cards_class:
+                cards_class.remove(card.__class__)
+                to_remove.append(card)
+                if not cards_class:
+                    break
+
+        for card in to_remove:
+            self._cards.remove(card)
 
     def set_deck(self):
         """init the good_stack and discard_stack"""
@@ -80,7 +94,7 @@ class InBattleEntity(pygame.sprite.Sprite):
         self._good_stack.remove(cards)
         self._discard_stack.extend(cards)
 
-    def get_cards(self) -> list[Card]:
+    def get_cards(self) -> typing.List[Card]:
         """return 6 cards from deck"""
         if len(self._good_stack) < 6:
             return self._good_stack[:len(self._good_stack)]
@@ -90,21 +104,41 @@ class InBattleEntity(pygame.sprite.Sprite):
     def attack(self):
         return self._attack
 
+    @attack.setter
+    def attack(self, value):
+        self._attack = value
+
     @property
     def initiative(self):
         return self._initiative
+
+    @initiative.setter
+    def initiative(self, value):
+        self._initiative = value
 
     @property
     def strength(self):
         return self._strength
 
+    @strength.setter
+    def strength(self, value):
+        self._strength = value
+
     @property
     def dexterity(self):
         return self._dexterity
 
+    @dexterity.setter
+    def dexterity(self, value):
+        self._dexterity = value
+
     @property
     def intelligence(self):
         return self._intelligence
+
+    @intelligence.setter
+    def intelligence(self, value):
+        self._intelligence = value
 
     @property
     def cards(self):
@@ -166,6 +200,20 @@ class InBattleEntity(pygame.sprite.Sprite):
     @property
     def entity_type(self):
         return self.entity_type
+    def hp(self):
+        return self._hp
+
+    @property
+    def max_hp(self):
+        return self._max_hp
+
+    @property
+    def shields(self):
+        return self._shields
+
+    @property
+    def max_shields(self):
+        return self._max_shields
 
     def __repr__(self):
         return f'{self.__class__.__name__} {self._name}'

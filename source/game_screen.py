@@ -6,7 +6,12 @@ from source.generate_mod import GenerateMod, GenerateModType
 from source.battle import Battle
 from source.enemies import Beetle
 from source.ui import Label, Alignment
-from source.data.sprites.primitives import NextButtonSprite, PreviousButtonSprite, BlueBackgroundSprite
+from source.inventory import Inventory
+from source.palmtop_ui import PalmtopUI
+from source.planet_choose import PlanetChoose
+from source.hub import Hub
+from source.data.sprites.primitives import BlueBackgroundSprite
+from source.store import Store, Money
 
 
 class GameScreen(pygame.Surface):
@@ -18,23 +23,27 @@ class GameScreen(pygame.Surface):
 
 
 class GameMapScreen(GameScreen):
-    def __init__(self, size: typing.Tuple[int, int]):
+    CellDict = {CellModifierType.EmptyCell: GenerateMod(GenerateModType.Base, 1),
+                CellModifierType.EnemyCell: GenerateMod(GenerateModType.Probability, 1)}
+    MapSize = (50, 50)
+
+    def __init__(self, size: typing.Tuple[int, int], game_map: PlayerViewMap):
         super(GameMapScreen, self).__init__(size)
 
-        self._player_view_map = PlayerViewMap(pygame.Rect(0, 0, *size), None)
-        cell_dict = {CellModifierType.EmptyCell: GenerateMod(GenerateModType.Base, 1),
-                     CellModifierType.EnemyCell: GenerateMod(GenerateModType.Probability, 1)}
-        self._player_view_map.generate_map((50, 50), cell_dict)
+        self._player_view_map = game_map
 
-        image = pygame.Surface((100, 100))
-        image.fill(pygame.Color('blue'))
-        self._palmtop_button = Label(image, (40, 30), text='КПК', font_size=16)
+        self._palmtop_button = Label(BlueBackgroundSprite().image, (40, 30), text='КПК', font_size=16)
+        self._is_draw_hub_button = False
+        self._hub_button = Label(BlueBackgroundSprite().image, (80, 30), text='Вернуться', font_size=16)
 
     def draw(self, screen: pygame.Surface):
         surface = pygame.Surface((screen.get_rect().width - self._palmtop_button.rect.width, screen.get_rect().height))
         self._player_view_map.draw(surface)
         screen.blit(surface, (0, 0))
         self._palmtop_button.draw(screen, (screen.get_rect().width - self._palmtop_button.rect.width, 0))
+        if self._is_draw_hub_button:
+            place = self._hub_button.image.get_rect(center=(screen.get_rect().center[0], self._hub_button.rect.height))
+            self._hub_button.draw(screen, place.topleft)
 
     @property
     def game_map(self):
@@ -43,6 +52,18 @@ class GameMapScreen(GameScreen):
     @property
     def palmtop_button(self):
         return self._palmtop_button
+
+    @property
+    def hub_button(self):
+        return self._hub_button
+
+    @property
+    def is_draw_hub_button(self):
+        return self._is_draw_hub_button
+
+    @is_draw_hub_button.setter
+    def is_draw_hub_button(self, value):
+        self._is_draw_hub_button = value
 
 
 class BattleScreen(GameScreen):
@@ -62,72 +83,68 @@ class BattleScreen(GameScreen):
 
 
 class PalmtopUIScreen(GameScreen):
-    def __init__(self, size: typing.Tuple[int, int], player_entities: typing.List):
+    def __init__(self, size: typing.Tuple[int, int], player_entities: typing.List, inventory: Inventory):
         super(PalmtopUIScreen, self).__init__(size)
 
-        self._player_entities = player_entities
-        self._current_player_entity = player_entities[0]
-        image = pygame.Surface((100, 100))
-        image.fill(pygame.Color('blue'))
-        self._exit_button = Label(image, (40, 30), text='карта', font_size=18)
-        self._next_player_button = Label(NextButtonSprite().image, (30, 27))
-        self._previous_player_button = Label(PreviousButtonSprite().image, (30, 27))
-        self._character_name_label = Label(BlueBackgroundSprite().image, (200, 30),
-                                           text=self._current_player_entity.name, font_size=24)
+        self._palmtop_ui = PalmtopUI(pygame.Rect(0, 0, *size), player_entities, inventory)
 
     def draw(self, screen: pygame.Surface):
-        indent = 25
+        self._palmtop_ui.draw(screen)
 
-        self._draw_character_switcher(screen, (screen.get_rect().center[0] * 1.5 - indent, 10))
-        # draw character
-        screen.blit(pygame.transform.scale(self._current_player_entity.icon,
-                                           (self._character_name_label.rect.width,
-                                            self._character_name_label.rect.width)),
-                    (self._character_name_label.offset[0], self._character_name_label.offset[1] +
-                     self._character_name_label.rect.height + indent))
-
-        self._draw_character_skill_tree(screen, (0, 0))
-
-        self._exit_button.draw(screen, (screen.get_rect().width - self._exit_button.rect.width, 0))
-
-    def _draw_character_switcher(self, screen: pygame.Surface, position: typing.Tuple[int, int], indent=25):
-        self._character_name_label.draw(screen, (position[0] - self._character_name_label.rect.width // 2, position[1]))
-        self._previous_player_button.draw(screen, (position[0] - self._character_name_label.rect.width // 2 - indent -
-                                                   self._previous_player_button.rect.width, position[1]))
-        self._next_player_button.draw(screen, (position[0] + self._character_name_label.rect.width // 2 + indent,
-                                               position[1]))
-
-    def _draw_character_skill_tree(self, screen: pygame.Surface, position: typing.Tuple[int, int], indent=25):
-        surface = pygame.Surface((screen.get_size()[0] // 2, screen.get_size()[1]))
-        pygame.draw.rect(surface, pygame.Color('gray'), (0, 0, *surface.get_size()), 3)
-        skill_tree: dict = self._current_player_entity.speciality.value.SkillTree
-        cols = [indent, surface.get_size()[0] // 2]
-        for list_index, skills in enumerate(skill_tree.values()):
-            for skill_index, skill in enumerate(skills):
-                label = Label(BlueBackgroundSprite().image, (surface.get_size()[0] // 2 - indent * 2, 30),
-                              skill, font_size=20, alignment=Alignment.Left)
-                label.draw(surface, (cols[skill_index], indent + indent * 2 * list_index))
-        screen.blit(surface, (0, 0))
-
-    def get_click(self, mouse_pos: typing.Tuple[int, int]):
-        if self._next_player_button.rect.collidepoint(mouse_pos):
-            current_player_entity_index = [index for index, i in enumerate(self._player_entities)
-                                           if i == self._current_player_entity][0]
-            self._current_player_entity = self._player_entities[current_player_entity_index + 1] if \
-                current_player_entity_index + 1 < len(self._player_entities) \
-                else self._player_entities[0]
-
-            self._character_name_label.set_text(self._current_player_entity.name)
-
-        if self._previous_player_button.rect.collidepoint(mouse_pos):
-            current_player_entity_index = [index for index, i in enumerate(self._player_entities)
-                                           if i == self._current_player_entity][0]
-            self._current_player_entity = self._player_entities[current_player_entity_index - 1] if \
-                current_player_entity_index - 1 >= 0 \
-                else self._player_entities[-1]
-
-            self._character_name_label.set_text(self._current_player_entity.name)
+    @property
+    def palmtop_ui(self):
+        return self._palmtop_ui
 
     @property
     def exit_button(self):
-        return self._exit_button
+        return self._palmtop_ui.exit_button
+
+
+class PlanetChooseScreen(GameScreen):
+    def __init__(self, size: typing.Tuple[int, int]):
+        super(PlanetChooseScreen, self).__init__(size)
+
+        self._planet_choose = PlanetChoose(pygame.Rect(0, 0, *size))
+
+    def draw(self, screen: pygame.Surface):
+        self._planet_choose.draw(screen)
+
+    @property
+    def planet_choose(self):
+        return self._planet_choose
+
+    @property
+    def exit_button(self):
+        return self._planet_choose.exit_button
+
+
+class HubScreen(GameScreen):
+    def __init__(self, size: typing.Tuple[int, int]):
+        super(HubScreen, self).__init__(size)
+
+        self._hub = Hub(pygame.Rect(0, 0, *size))
+
+    def draw(self, screen: pygame.Surface):
+        self._hub.draw(screen)
+
+    @property
+    def hub(self):
+        return self._hub
+
+
+class StoreScreen(GameScreen):
+    def __init__(self, size: typing.Tuple[int, int], money: Money):
+        super(StoreScreen, self).__init__(size)
+
+        self._store = Store(pygame.rect.Rect(0, 0, *size), 5, 5, 2, money)
+
+    def draw(self, screen: pygame.Surface):
+        self._store.draw(screen)
+
+    @property
+    def store(self):
+        return self._store
+
+    @property
+    def exit_button(self):
+        return self._store.exit_button

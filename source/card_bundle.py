@@ -19,7 +19,7 @@ class RushAttack(Card):
 
 class FastPunch(Card):
     def __init__(self):
-        super(FastPunch, self).__init__(NoneSprite(), 'Быстрый удар', 'Сносит врагу X хп', CardType.Attack,
+        super(FastPunch, self).__init__(NoneSprite(), 'быстрый удар', 'сносит врага\nна X хп', CardType.Attack,
                                         ActionAreaType.OneEnemy, lambda y, x: x.apply_damage(y.attack * 1))
 
 
