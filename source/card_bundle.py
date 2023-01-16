@@ -13,8 +13,8 @@ class NoneSprite(pygame.sprite.Sprite):
 
 class RushAttack(Card):
     def __init__(self):
-        super(RushAttack, self).__init__(NoneSprite(), 'Влететь!', 'Влетает во\n врага и\nнаносит\nему 10 урона',
-                                         CardType.Attack, ActionAreaType.OneEnemy, lambda y, x: x.apply_damage(10))
+        super(RushAttack, self).__init__(NoneSprite(), 'Влететь!', 'Влетает во\n врага и\nнаносит\nему 15 урона',
+                                         CardType.Attack, ActionAreaType.OneEnemy, lambda y, x: x.apply_damage(100))
 
 
 class FastPunch(Card):
@@ -41,18 +41,24 @@ class ShootEMGAttack(Card):
                                              CardType.Attack, ActionAreaType.OneEnemy, lambda y, x: x.apply_damage(15))
 
 
+class HealSelf(Card):
+    def __init__(self):
+        super(HealSelf, self).__init__(NoneSprite(), 'Утяжка', 'Лечит\nсебя на\n10 очков\nздоровья', CardType.Defend,
+                                       ActionAreaType.SelfAction, lambda y, x: x.apply_hp(10))
+
+
 class HealChar(Card):
     def __init__(self):
-        super(HealChar, self).__init__(NoneSprite(), 'Аптечка', 'Восстанавливает\n выбранному\n'
-                                                                'персонажу 20\n очков здоровья', CardType.Defend,
+        super(HealChar, self).__init__(NoneSprite(), 'Аптечка', 'Лечит\nвыбранного\n'
+                                                                'персонажа на\n20 очков\nздоровья', CardType.Defend,
                                        ActionAreaType.OneAlly,
                                        lambda y, x: x.apply_hp(20))
 
 
 class HealAllChars(Card):
     def __init__(self):
-        super(HealAllChars, self).__init__(NoneSprite(), 'Адреналин', 'Восстанавливает\n всем персонажам\n10 очков\n'
-                                                                      ' здоровья', CardType.Defend,
+        super(HealAllChars, self).__init__(NoneSprite(), 'Адреналин', 'Лечит\n всех персонажей\nна 10 очков\n'
+                                                                      'здоровья', CardType.Defend,
                                            ActionAreaType.AllAllies,
                                            lambda y, x: [x[i].apply_hp(10) for i in x])
 
