@@ -69,5 +69,9 @@ class Card(pygame.sprite.Sprite):
     def action_area_type(self):
         return self._action_area_type
 
+    @property
+    def card_type(self):
+        return self._card_type
+
     def __str__(self):
         return self._name
