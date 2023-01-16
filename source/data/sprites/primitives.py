@@ -1,10 +1,10 @@
 import pygame
 
 
-class NoneCellSprite(pygame.sprite.Sprite):
+class NoneSprite(pygame.sprite.Sprite):
     """sprite for NoneCell type cells"""
     def __init__(self):
-        super(NoneCellSprite, self).__init__()
+        super(NoneSprite, self).__init__()
         self.image = pygame.Surface((500, 500))
         self.rect = self.image.get_rect()
 
@@ -128,3 +128,38 @@ class ScaledSprite(pygame.sprite.Sprite):
     @property
     def image(self):
         return pygame.transform.scale(self._image, (70, 70))
+
+
+class BeetleSprite(pygame.sprite.Sprite):
+    def __init__(self):
+        super(BeetleSprite, self).__init__()
+        self.image = pygame.image.load('./source/data/sprites/cacodemon.png')
+        self.rect = self.image.get_rect()
+
+
+class HoverSprite(pygame.sprite.Sprite):
+    def __init__(self):
+        super(HoverSprite, self).__init__()
+        self.image = pygame.image.load('./source/data/sprites/hover.png')
+        self.rect = self.image.get_rect()
+
+
+class FirstCharacterSprite(pygame.sprite.Sprite):
+    def __init__(self):
+        super(FirstCharacterSprite, self).__init__()
+        self.image = pygame.image.load('./source/data/sprites/first_character.png')
+        self.rect = self.image.get_rect()
+
+
+class SecondCharacterSprite(pygame.sprite.Sprite):
+    def __init__(self):
+        super(SecondCharacterSprite, self).__init__()
+        self.image = pygame.image.load('./source/data/sprites/second_character.png')
+        self.rect = self.image.get_rect()
+
+
+class ThirdCharacterSprite(pygame.sprite.Sprite):
+    def __init__(self):
+        super(ThirdCharacterSprite, self).__init__()
+        self.image = pygame.image.load('./source/data/sprites/third_character.png')
+        self.rect = self.image.get_rect()
