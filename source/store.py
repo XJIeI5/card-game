@@ -72,7 +72,8 @@ class Store:
                                                        draw_rect.width // 2 - self._indent,
                                                        draw_rect.height // 2 - self._indent),
                                            rows, columns, pages)
-        self._seller_inventory.extend_items({items_bundle.HealingSerumItem: 15, items_bundle.SmallPistolItem: 3})
+        self._seller_inventory.extend_items({items_bundle.HealingSerumItem: 15, items_bundle.SmallPistolItem: 3,
+                                             items_bundle.ShotgunItem: 2})
         self._sell_label = Label(GreenBackgroundSprite().image, (self._draw_rect.width // 2 - self._indent, 30),
                                  text='ПРОДАТЬ', font_size=36)
         self._player_inventory = Inventory(pygame.Rect(self._seller_inventory.draw_rect.width + self._indent * 2,
