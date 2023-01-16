@@ -14,7 +14,7 @@ class NoneSprite(pygame.sprite.Sprite):
 class RushAttack(Card):
     def __init__(self):
         super(RushAttack, self).__init__(NoneSprite(), 'Влететь!', 'Влетает во\n врага и\nнаносит\nему 15 урона',
-                                         CardType.Attack, ActionAreaType.OneEnemy, lambda y, x: x.apply_damage(100))
+                                         CardType.Attack, ActionAreaType.OneEnemy, lambda y, x: x.apply_damage(15))
 
 
 class FastPunch(Card):
@@ -60,7 +60,7 @@ class HealAllChars(Card):
         super(HealAllChars, self).__init__(NoneSprite(), 'Адреналин', 'Лечит\n всех персонажей\nна 10 очков\n'
                                                                       'здоровья', CardType.Defend,
                                            ActionAreaType.AllAllies,
-                                           lambda y, x: [x[i].apply_hp(10) for i in x])
+                                           lambda y, x: x.apply_hp(10))
 
 
 class DamageReduce(Card):
@@ -68,7 +68,7 @@ class DamageReduce(Card):
         super(DamageReduce, self).__init__(NoneSprite(), 'Взлом оружия', 'Взламывает\nоружие\nпротивников\n'
                                                                          'и уменьшает\nвходящий урон\nна 10%',
                                            CardType.Weak, ActionAreaType.AllEnemies,
-                                           lambda y, x: [i.reduce_damage(0.9) for i in x])
+                                           lambda y, x: x.reduce_damage(0.9))
 
 
 class ShotgunAttack(Card):
@@ -76,4 +76,4 @@ class ShotgunAttack(Card):
         super(ShotgunAttack, self).__init__(NoneSprite(), "Выстрел из дробовика", "Стреляет и\nнаносит всем\nврагам 10\n"
                                                                                   "урона",
                                             CardType.Attack, ActionAreaType.AllEnemies,
-                                            lambda y, x: [i.apply_damage(10) for i in x])
+                                            lambda y, x: x.apply_damage(10))

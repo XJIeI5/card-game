@@ -163,3 +163,45 @@ class ThirdCharacterSprite(pygame.sprite.Sprite):
         super(ThirdCharacterSprite, self).__init__()
         self.image = pygame.image.load('./source/data/sprites/third_character.png')
         self.rect = self.image.get_rect()
+
+
+class ShotgunSprite(pygame.sprite.Sprite):
+    def __init__(self):
+        super(ShotgunSprite, self).__init__()
+        self.image = pygame.image.load('./source/data/sprites/shotgun.png')
+        self.rect = self.image.get_rect()
+
+
+class PistolSprite(pygame.sprite.Sprite):
+    def __init__(self):
+        super(PistolSprite, self).__init__()
+        self.image = pygame.image.load('./source/data/sprites/pistol.png')
+        self.rect = self.image.get_rect()
+
+
+class HealingSerumSprite(pygame.sprite.Sprite):
+    def __init__(self):
+        super(HealingSerumSprite, self).__init__()
+        self.image = pygame.image.load('./source/data/sprites/healing_serum.png')
+        self.rect = self.image.get_rect()
+
+
+class HoverSpikeSprite(pygame.sprite.Sprite):
+    def __init__(self):
+        super(HoverSpikeSprite, self).__init__()
+        self.image = pygame.image.load('./source/data/sprites/hover_spike.png')
+        self.rect = self.image.get_rect()
+
+
+class GooSprite(pygame.sprite.Sprite):
+    def __init__(self):
+        super(GooSprite, self).__init__()
+        self.image = pygame.image.load('./source/data/sprites/goo.png')
+        self.rect = self.image.get_rect()
+
+
+class ShellSprite(pygame.sprite.Sprite):
+    def __init__(self):
+        super(ShellSprite, self).__init__()
+        self.image = pygame.image.load('./source/data/sprites/shell.png')
+        self.rect = self.image.get_rect()
