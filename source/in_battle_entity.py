@@ -158,11 +158,11 @@ class InBattleEntity(pygame.sprite.Sprite):
     @property
     def image(self):
         scaled_image = pygame.transform.scale(self._image, (70, 70))
-        surface = pygame.Surface((scaled_image.get_size()[0] + 10, scaled_image.get_size()[1] + 40))
+        surface = pygame.Surface((scaled_image.get_size()[0] + 10, scaled_image.get_size()[1] + 50))
         pygame.draw.ellipse(surface, self._highlight_type.value,
                             (10, scaled_image.get_size()[1], scaled_image.get_size()[0], 30), 5)
 
-        surface.blit(scaled_image, (10, 10))
+        surface.blit(scaled_image, (10, 20))
 
         pygame.draw.rect(surface, pygame.Color('gray'), (0, 0, 50, 10))
         pygame.draw.rect(surface, pygame.Color('red'), (0, 0, 50 * (self._hp / self._max_hp) // 1, 10))
