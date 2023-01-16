@@ -3,14 +3,22 @@ from source.item import Item, ItemType, Equipment, EquipmentType
 from source import card_bundle
 
 
-class RockItem(Item):
+class ShellItem(Item):
     def __init__(self):
-        super(RockItem, self).__init__(BlueBackgroundSprite(), 'камень', 'кусок камня', 64, ItemType.Collectable, 200)
+        super(ShellItem, self).__init__(BlueBackgroundSprite(), 'панцирь', 'кусок панциря', 64, ItemType.Collectable,
+                                        25)
 
 
-class GlassItem(Item):
+class GooItem(Item):
     def __init__(self):
-        super(GlassItem, self).__init__(GreenBackgroundSprite(), 'стекло', 'кусок стекла', 2, ItemType.Collectable, 100)
+        super(GooItem, self).__init__(GreenBackgroundSprite(), 'жижа', 'склязкая жижа', 2, ItemType.Collectable, 30)
+
+
+class HoverSpikeItem(Equipment):
+    def __init__(self):
+        super(HoverSpikeItem, self).__init__(GreenBackgroundSprite(), 'шип летуна', 'шип летуна\nможет ранить врагов',
+                                             EquipmentType.MainWeapon, price=75, cards=[card_bundle.RushAttack],
+                                             characteristics={'attack': 3})
 
 
 class HealingSerumItem(Item):
