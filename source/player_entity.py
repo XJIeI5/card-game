@@ -6,7 +6,8 @@ from enum import Enum
 from source.in_battle_entity import InBattleEntity
 from source import skills_bundle
 from source.inventory import Inventory
-from source.data.sprites.primitives import BlueBackgroundSprite, GreenBackgroundSprite, ScaledSprite
+from source.data.sprites.primitives import ScaledSprite, FirstCharacterSprite, SecondCharacterSprite,\
+    ThirdCharacterSprite
 from source import items_bundle
 
 
@@ -46,10 +47,12 @@ class PlayerEntity(InBattleEntity):
                  attack: int, level: int, speciality: PlayerSpeciality, initiative: int):
 
         self._index = index
-        if index == 0 or index == 2:
-            sprite = ScaledSprite(BlueBackgroundSprite())
+        if index == 0:
+            sprite = ScaledSprite(FirstCharacterSprite())
+        elif index == 1:
+            sprite = ScaledSprite(SecondCharacterSprite())
         else:
-            sprite = ScaledSprite(GreenBackgroundSprite())
+            sprite = ScaledSprite(ThirdCharacterSprite())
 
         super(PlayerEntity, self).__init__(sprite, name, max_hp, max_shields, attack, level, initiative)
 
