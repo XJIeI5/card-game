@@ -3,14 +3,18 @@ import typing
 from source.card import ActionAreaType
 from source.in_battle_entity import InBattleEntity, HighlightType
 from source.player_entity import PlayerEntity
+from source.ui import AcceptDialog
+from source.data.sprites.primitives import GrayBackgroundSprite
+from source.inventory import Inventory
 
 
 class Battle:
-    def __init__(self, draw_rect: pygame.rect.Rect, player_entities: list, enemy_entities: list):
+    def __init__(self, draw_rect: pygame.rect.Rect, player_entities: list, enemy_entities: list, inventory: Inventory):
         self._draw_rect = draw_rect
 
         self._player_entities = player_entities
         self._enemy_entities = enemy_entities
+        self._inventory = inventory
 
         self._move_order = {}
         self._current_acting_entity: typing.Union[None, InBattleEntity] = None
@@ -19,7 +23,10 @@ class Battle:
         self._picked_card = None
 
         self._is_win = False
+        self._private_is_win = False
         self._is_lose = False
+
+        self._loot_show_dialog: typing.Union[None, AcceptDialog] = None
 
         self.apply_equipment_effects()
         self.init_move_order()
@@ -42,6 +49,10 @@ class Battle:
                                                  key=lambda x: x.initiative)[::-1][0]
 
     def next_action(self) -> None:
+        if all([i.is_dead for i in self._player_entities]):
+            self.lose_battle()
+            return
+
         self.reset_picked_card()
         if self._current_acting_entity is None:
             self._current_acting_entity = self.get_first_entity()
@@ -76,6 +87,9 @@ class Battle:
         self.draw_enemies(surface)
         self.draw_cards(surface)
         self.draw_action_order(surface)
+        if self._loot_show_dialog is not None:
+            self._loot_show_dialog.draw(surface, (self._draw_rect.width // 4, self._draw_rect.height // 4))
+
         screen.blit(surface, (self._draw_rect.x, self._draw_rect.y))
 
     def draw_player(self, surface: pygame.Surface) -> None:
@@ -88,7 +102,7 @@ class Battle:
             surface.blit(entity.image, entity.rect)
 
     def draw_enemies(self, surface: pygame.Surface) -> None:
-        start_x, start_y = self._draw_rect.width // (len(self._enemy_entities) + 1), \
+        start_x, start_y = self._draw_rect.width // 4, \
                            self._draw_rect.height // (len(self._enemy_entities) + 1)
         offset_x, offset_y = -25, (self._draw_rect.height - 200) // (len(self._enemy_entities) + 1)
         for i, entity in enumerate(self._enemy_entities):
@@ -129,6 +143,7 @@ class Battle:
 
     def get_click(self, mouse_pos: typing.Tuple[int, int]) -> None:
         self.pick_card(mouse_pos)
+        self.pick_up_loot(mouse_pos)
         if self._picked_card:
             # Self
             if self._picked_card.action_area_type == ActionAreaType.SelfAction:
@@ -172,8 +187,7 @@ class Battle:
                         self.next_action()
                         break
             if all([i.is_dead for i in self._enemy_entities]):
-                self._is_win = True
-                self.end_battle()
+                self.win_battle()
 
     def pick_card(self, mouse_pos: typing.Tuple[int, int]) -> None:
         for card in self._current_cards:
@@ -187,8 +201,29 @@ class Battle:
                     return
                 self._picked_card = card
 
-    def end_battle(self):
+    def pick_up_loot(self, mouse_pos: typing.Tuple[int, int]):
+        if self._loot_show_dialog is not None and\
+            (self._loot_show_dialog.accept_button.rect.collidepoint(mouse_pos) or
+             self._loot_show_dialog.reject_button.rect.collidepoint(mouse_pos)):
+            self._is_win = self._private_is_win
+            self._loot_show_dialog = None
+
+    def win_battle(self):
         self._undo_equipment_effects()
+        self._private_is_win = True
+        loot = [i.get_loot() for i in self._enemy_entities]
+        images = [i().image for i in loot]
+        self._loot_show_dialog = AcceptDialog(GrayBackgroundSprite().image, (self._draw_rect.width // 2,
+                                                                             self._draw_rect.height // 2),
+                                              'лут с врагов!', 'вы нашли:', font_size=30, info_font_size=24,
+                                              images=images)
+        new_items = {}
+        for item_class in loot:
+            new_items[item_class] = new_items.get(item_class, 0) + 1
+        self._inventory.extend_items(new_items)
+
+    def lose_battle(self):
+        self._is_lose = True
 
     def _undo_equipment_effects(self):
         for character in self._player_entities:
