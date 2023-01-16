@@ -3,13 +3,14 @@ import sys
 import os
 import typing
 from enum import Enum
-from source.game_screen import GameMapScreen, BattleScreen, PalmtopUIScreen, PlanetChooseScreen, HubScreen, StoreScreen
+from source.game_screen import GameMapScreen, BattleScreen, PalmtopUIScreen, PlanetChooseScreen, HubScreen,\
+    StoreScreen, HomeScreen
 from source.player_entity import PlayerEntity, PlayerSpeciality
 from source.cell import Cell, CellModifierType
 from source.card_bundle import FastPunch, ShieldRestruct
 from source.data.sprites.primitives import PlayerCellSprite, ScaledSprite
 from source.inventory import Inventory
-from source.items_bundle import RockItem, GlassItem, HealingSerumItem, SmallPistolItem
+from source.items_bundle import ShellItem, GooItem, HealingSerumItem, SmallPistolItem
 from source.store import Money
 
 
@@ -20,6 +21,7 @@ class GameState(Enum):
     PlanetChoose = 3
     Hub = 4
     Store = 5
+    Home = 6
 
 
 class TestSprite(pygame.sprite.Sprite):
@@ -38,8 +40,9 @@ class Game:
         self._clock = pygame.time.Clock()
         self._screen.fill(pygame.Color('black'))
         self._fps = 60
-        self._state = GameState.Hub
+        self._state = GameState.Home
         self._money = Money(100)
+        self._planet_index: typing.Union[None, int] = None
         cards = [ShieldRestruct, FastPunch]
         self._player_entities = [PlayerEntity(0, 'A person', 50, 25, 10, 1,
                                               PlayerSpeciality.Medic, 1),
@@ -55,9 +58,36 @@ class Game:
         self._game_map_screen: typing.Union[None, GameMapScreen] = None
         self._battle_screen: typing.Union[None, BattleScreen] = None
         self._palmtop_screen: typing.Union[None, PalmtopUIScreen] = None
-        self._planet_choose_screen = PlanetChooseScreen(size)
+        self._planet_choose_screen = PlanetChooseScreen(size, self._money)
         self._hub_screen = HubScreen(size)
-        self._store_screen = StoreScreen(size, self._money)
+        self._store_screen = StoreScreen(size, self._money, self._inventory)
+        self._home_screen = HomeScreen(size)
+        self._inventory.extend_items({SmallPistolItem: 3})
+
+    def init_game_elements(self):
+        self._state = GameState.Home
+        self._money = Money(100)
+        self._planet_index: typing.Union[None, int] = None
+        cards = [ShieldRestruct, FastPunch]
+        self._player_entities = [PlayerEntity(0, 'A person', 50, 25, 10, 1,
+                                              PlayerSpeciality.Medic, 1),
+                                 PlayerEntity(1, 'B person', 50, 25, 10, 1,
+                                              PlayerSpeciality.Tank, 1),
+                                 PlayerEntity(2, 'C person', 50, 25, 10, 1,
+                                              PlayerSpeciality.Engineer, 1)]
+        [i.extend_cards(cards) for i in self._player_entities]
+        self._inventory = Inventory(pygame.Rect(0, 0,
+                                                self._window_width // 2, self._window_height // 2), 5, 5, 2)
+        # [self._inventory.extend_items({SmallPistolItem: 1, RockItem: 2, HealingSerumItem: 2}) for _ in range(3)]
+
+        self._game_map_screen: typing.Union[None, GameMapScreen] = None
+        self._battle_screen: typing.Union[None, BattleScreen] = None
+        self._palmtop_screen: typing.Union[None, PalmtopUIScreen] = None
+        self._planet_choose_screen = PlanetChooseScreen(self._window_size, self._money)
+        self._hub_screen = HubScreen(self._window_size)
+        self._store_screen = StoreScreen(self._window_size, self._money, self._inventory)
+        self._home_screen = HomeScreen(self._window_size)
+        self._inventory.extend_items({SmallPistolItem: 3})
 
     def run(self) -> None:
         while True:
@@ -73,6 +103,8 @@ class Game:
                 self.hub_view()
             elif self._state == GameState.Store:
                 self.store_view()
+            elif self._state == GameState.Home:
+                self.home_view()
 
             self._clock.tick(self._fps)
             pygame.display.flip()
@@ -123,7 +155,8 @@ class Game:
         if self._game_map_screen.game_map.cells[player_position[1]][player_position[0]].modifier == \
                 CellModifierType.EnemyCell:
             self._state = GameState.Battle
-            self._battle_screen = BattleScreen(self._window_size, self._player_entities)
+            self._battle_screen = BattleScreen(self._window_size, self._player_entities, self._inventory,
+                                               self._planet_index)
             print('BATTLE')
 
     def battle_view(self):
@@ -142,6 +175,10 @@ class Game:
             player_position = self._game_map_screen.game_map.player_position
             self._game_map_screen.game_map.cells[player_position[1]][player_position[0]] = \
                 Cell(player_position[1], player_position[0], CellModifierType.EmptyCell)
+
+        if self._battle_screen.battle.is_lose:
+            self._state = GameState.Home
+            self.init_game_elements()
 
     def palmtop_view(self):
         for event in pygame.event.get():
@@ -165,15 +202,18 @@ class Game:
             # state changing
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if self._planet_choose_screen.exit_button.rect.collidepoint(event.pos):
-                    self._planet_choose_screen.planet_choose.save_maps('./source/data/save')
                     self._state = GameState.Hub
                 for index, button in enumerate(self._planet_choose_screen.planet_choose.planet_buttons):
                     if button.rect.collidepoint(event.pos):
                         game_map = self._planet_choose_screen.planet_choose.\
                             get_planet(index, GameMapScreen.MapSize, GameMapScreen.CellDict)
+                        if game_map is None:
+                            break
                         self._state = GameState.GameMap
                         self._game_map_screen = GameMapScreen(self._window_size, game_map)
+                        self._planet_index = index
                         break
+                self._planet_choose_screen.planet_choose.get_click(event)
 
         self._screen.fill(pygame.Color('black'))
         self._planet_choose_screen.draw(self._screen)
@@ -191,6 +231,7 @@ class Game:
                 elif self._hub_screen.hub.store_button.rect.collidepoint(event.pos) and \
                         (self._hub_screen.hub.setting_menu is None and self._hub_screen.hub.file_choose_menu is None):
                     self._state = GameState.Store
+                    self._store_screen.store.update_player_inventory()
 
                 if self._hub_screen.hub.file_choose_menu is not None:
                     if self._hub_screen.hub.file_0_button.rect.collidepoint(event.pos):
@@ -229,6 +270,18 @@ class Game:
 
         self._screen.fill(pygame.Color('black'))
         self._store_screen.draw(self._screen)
+
+    def home_view(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+            if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.KEYDOWN:
+                self._state = GameState.Hub
+
+        self._screen.fill(pygame.Color('black'))
+        self._home_screen.draw(self._screen)
 
     def save_all_files(self, directory_name: str):
         if not os.path.exists(directory_name):
