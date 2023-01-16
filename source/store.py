@@ -59,10 +59,11 @@ class ItemMenageMenu(ContextMenu):
 
 
 class Store:
-    def __init__(self, draw_rect: pygame.Rect, rows: int, columns: int, pages: int, money: Money):
+    def __init__(self, draw_rect: pygame.Rect, rows: int, columns: int, pages: int, money: Money, inventory: Inventory):
         self._draw_rect = draw_rect
         self._indent = 25
         self._money = money
+        self._inventory = inventory
 
         self._buy_label = Label(GreenBackgroundSprite().image, (self._draw_rect.width // 2 - self._indent, 30),
                                 text='КУПИТЬ', font_size=36)
@@ -79,6 +80,8 @@ class Store:
                                                        draw_rect.width // 2 - self._indent,
                                                        draw_rect.height // 2 - self._indent),
                                            rows, columns, pages)
+        self.update_player_inventory()
+
         self._exit_button = Label(GrayBackgroundSprite().image, (40, 30), text='выйти', font_size=18)
 
         self._info_dialog: typing.Union[None, AcceptDialog] = None
@@ -89,6 +92,9 @@ class Store:
         self._selling_item: typing.Union[None, Item] = None
         self._acting_item_menu: typing.Union[None, ItemMenageMenu] = None
         self._context_menu_pos: typing.Tuple[int, int] = (0, 0)
+
+    def update_player_inventory(self):
+        self._player_inventory._items = self._inventory.items
 
     def draw(self, screen: pygame.Surface):
         self._draw_inventory(screen)
