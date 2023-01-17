@@ -13,7 +13,8 @@ from source.enemy import Enemy
 class Beetle(Enemy):
     def __init__(self, level: int):
         cards = [card_bundle.RushAttack] * 3
-        super(Beetle, self).__init__(BeetleSprite(), 'жук', 10, 15, 10, level, 10, [items_bundle.ShellItem])
+        super(Beetle, self).__init__(ScaledSprite(BeetleSprite()), 'жук', 10, 15, 10, level, 10,
+                                     [items_bundle.ShellItem])
         self.extend_cards(cards)
 
     def act(self, player_entities: typing.List[InBattleEntity]) -> None:
