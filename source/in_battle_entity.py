@@ -208,6 +208,10 @@ class InBattleEntity(pygame.sprite.Sprite):
     def max_hp(self):
         return self._max_hp
 
+    @max_hp.setter
+    def max_hp(self, value):
+        self._max_hp = value
+
     @property
     def shields(self):
         return self._shields
