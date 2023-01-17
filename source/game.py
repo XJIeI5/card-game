@@ -8,9 +8,7 @@ from source.game_screen import GameMapScreen, BattleScreen, PalmtopUIScreen, Pla
 from source.player_entity import PlayerEntity, PlayerSpeciality
 from source.cell import Cell, CellModifierType
 from source.card_bundle import FastPunch, ShieldRestruct
-from source.data.sprites.primitives import PlayerCellSprite, ScaledSprite
 from source.inventory import Inventory
-from source.items_bundle import ShellItem, GooItem, HealingSerumItem, SmallPistolItem
 from source.store import Money
 
 
@@ -53,7 +51,6 @@ class Game:
         [i.extend_cards(cards) for i in self._player_entities]
         self._inventory = Inventory(pygame.Rect(0, 0,
                                                 self._window_width // 2, self._window_height // 2), 5, 5, 2)
-        # [self._inventory.extend_items({SmallPistolItem: 1, RockItem: 2, HealingSerumItem: 2}) for _ in range(3)]
 
         self._game_map_screen: typing.Union[None, GameMapScreen] = None
         self._battle_screen: typing.Union[None, BattleScreen] = None
@@ -77,7 +74,6 @@ class Game:
         [i.extend_cards(cards) for i in self._player_entities]
         self._inventory = Inventory(pygame.Rect(0, 0,
                                                 self._window_width // 2, self._window_height // 2), 5, 5, 2)
-        # [self._inventory.extend_items({SmallPistolItem: 1, RockItem: 2, HealingSerumItem: 2}) for _ in range(3)]
 
         self._game_map_screen: typing.Union[None, GameMapScreen] = None
         self._battle_screen: typing.Union[None, BattleScreen] = None
@@ -86,7 +82,6 @@ class Game:
         self._hub_screen = HubScreen(self._window_size)
         self._store_screen = StoreScreen(self._window_size, self._money, self._inventory)
         self._home_screen = HomeScreen(self._window_size)
-        self._inventory.extend_items({SmallPistolItem: 3})
 
     def run(self) -> None:
         pygame.mixer.music.load('./source/data/sounds/ambient.wav')
@@ -158,7 +153,6 @@ class Game:
             self._state = GameState.Battle
             self._battle_screen = BattleScreen(self._window_size, self._player_entities, self._inventory,
                                                self._planet_index)
-            print('BATTLE')
 
     def battle_view(self):
         for event in pygame.event.get():

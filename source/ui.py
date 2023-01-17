@@ -26,7 +26,7 @@ def blit_text(screen: pygame.Surface, draw_rect: pygame.Rect, text: str, font_si
             place = text_surface.get_rect(topright=draw_rect.topright)
             place.x -= 5
         screen.blit(text_surface, (place.x, draw_rect.center[1] - draw_rect.height // 4 +
-                                   line_height * index))  # (place.x, screen.get_rect().center[1] - screen.get_rect().height // 4)))
+                                   line_height * index))
 
 
 class Label(pygame.sprite.Sprite):

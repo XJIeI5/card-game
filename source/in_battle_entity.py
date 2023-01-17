@@ -62,8 +62,8 @@ class InBattleEntity(pygame.sprite.Sprite):
         if self._hp > self._max_hp:
             self._hp = self._max_hp
 
-    def reduce_damage(self, coef: int):
-        self._attack *= coef
+    def reduce_damage(self, coefficient: int):
+        self._attack *= coefficient
 
     def extend_cards(self, cards_class: typing.List):
         """gets a list of classes inherited from Card, instances of which will be added to self._cards"""

@@ -1,4 +1,3 @@
-import math
 import random
 import typing
 
@@ -10,7 +9,7 @@ from source.cell import Cell, CellModifierType
 from source.triangulation import get_lines_from_triangulation
 
 
-def get_cells_with_same_generate_mod(cell_dict: typing.Dict[CellModifierType, GenerateMod], condition: GenerateModType) \
+def get_cells_with_same_generate_mod(cell_dict: typing.Dict[CellModifierType, GenerateMod], condition: GenerateModType)\
         -> typing.List[typing.Tuple[CellModifierType, GenerateMod]]:
     """** args **
     cell_dict  -  dictionary with all types of cells
@@ -91,7 +90,7 @@ class GameMap:
 
     def fill_map(self):
         """** description **
-        recreates the self._cells from the Cell.modifier = self._fill"""
+        recreates the self._cells from the Cell modifier = self._fill"""
         self._cells = [[Cell(j, i, self._fill) for j in range(self._height)] for i in range(self._width)]
 
     def generate_map(self, size: typing.Tuple[int, int],
@@ -120,7 +119,7 @@ class GameMap:
     def place_base_type_cells(self, base_cells: typing.List[typing.Tuple[CellModifierType, GenerateMod]]) \
             -> typing.List[typing.Tuple[int, int]]:
         """** args **
-        base_cells  -  list of CellTypes and GenerateMod with GenerateMod.type == Base
+        base_cells  -  list of CellTypes and GenerateMod with GenerateMod type == Base
 
         ** description **
         places base type cells on map arranges according to the generated noise
@@ -143,7 +142,7 @@ class GameMap:
     def place_bridge_cells(self, base_cells: typing.List[typing.Tuple[CellModifierType, GenerateMod]]) \
             -> typing.List[typing.Tuple[int, int]]:
         """** args **
-        base_cells  - list of CellTypes and GenerateMod with GenerateMod.type == Base
+        base_cells  - list of CellTypes and GenerateMod with GenerateMod type == Base
 
          ** description **
          places base type cells on map to connect islands and returns the coordinates to which they were placed"""
@@ -164,8 +163,8 @@ class GameMap:
                                      placed_cell_indexes: typing.List[typing.Tuple[int, int]])\
             -> typing.List[typing.Tuple[int, int]]:
         """** args **
-        probability_cells  -  list of CellTypes and GenerateMod with GenerateMod.type == Probability
-        placed_cell_indexes  -  indexes of GenerateMod.type == Base cells on map
+        probability_cells  -  list of CellTypes and GenerateMod with GenerateMod type == Probability
+        placed_cell_indexes  -  indexes of GenerateMod type == Base cells on map
 
         ** description **
         places probability type cells on the map on base type cells
@@ -190,9 +189,9 @@ class GameMap:
                                placed_cell_indexes: typing.List[typing.Tuple[int, int]])\
             -> typing.List[typing.Tuple[int, int]]:
         """** args **
-        count_cells  -  list of CellTypes and GenerateMod with GenerateMod.type == Count
-        base_cells  -  list of CellTypes and GenerateMod with GenerateMod.type == Base
-        placed_cell_indexes  -  indexes of GenerateMod.type == Base cells on map
+        count_cells  -  list of CellTypes and GenerateMod with GenerateMod type == Count
+        base_cells  -  list of CellTypes and GenerateMod with GenerateMod type == Base
+        placed_cell_indexes  -  indexes of GenerateMod type == Base cells on map
 
         ** description **
         places count type cells on the map on base type cells and returns the coordinates to which they were placed"""

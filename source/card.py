@@ -1,5 +1,4 @@
 import pygame
-import typing
 from enum import Enum
 from source.ui import blit_text, Alignment
 

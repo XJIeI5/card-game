@@ -1,7 +1,6 @@
 import pygame.surface
 from enum import Enum
 from source.data.sprites import primitives
-# from source.entity import Entity
 
 
 class CellModifierType(Enum):

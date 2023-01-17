@@ -6,7 +6,7 @@ from source.cell import CellModifierType
 from source.generate_mod import GenerateMod, GenerateModType
 from source.battle import Battle
 from source.enemies_bundle import Beetle, Hover
-from source.ui import Label, Alignment
+from source.ui import Label
 from source.inventory import Inventory
 from source.palmtop_ui import PalmtopUI
 from source.planet_choose import PlanetChoose

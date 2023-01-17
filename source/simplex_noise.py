@@ -135,4 +135,4 @@ class Noise:
     def update_perm():
         """** description **
         sets perm_original new values"""
-        Noise.perm_original = [random.randint(0, 255) for i in range(512)]
+        Noise.perm_original = [random.randint(0, 255) for _ in range(512)]

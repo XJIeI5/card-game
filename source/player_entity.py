@@ -1,5 +1,4 @@
 import pygame
-import typing
 import json
 import os
 from enum import Enum

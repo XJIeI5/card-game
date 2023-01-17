@@ -3,8 +3,8 @@ import typing
 import json
 from source.data.sprites.primitives import PreviousButtonSprite, NextButtonSprite, BlueBackgroundSprite, \
     GrayBackgroundSprite
-from source.ui import Label, ContextMenu
-from source.item import Item, ItemType
+from source.ui import Label
+from source.item import Item
 from source import items_bundle
 
 

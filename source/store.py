@@ -2,7 +2,7 @@ import pygame
 import typing
 from source.inventory import Inventory
 from source.ui import ContextMenu, AcceptDialog, Label
-from source.item import Item, ItemType
+from source.item import Item
 from source.data.sprites.primitives import BlueBackgroundSprite, GrayBackgroundSprite, GreenBackgroundSprite
 from source import items_bundle
 

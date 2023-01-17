@@ -1,4 +1,3 @@
-import pygame
 import typing
 import random
 from source.player_entity import PlayerEntity
@@ -27,7 +26,6 @@ class Beetle(Enemy):
         else:
             player_entity = player_entities[0]
         card.act(self, player_entity)
-        print('hurted', player_entity, 'by 10')
 
 
 class Hover(Enemy):
