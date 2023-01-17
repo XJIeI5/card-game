@@ -14,47 +14,50 @@ class RushAttack(Card):
     def __init__(self):
         super(RushAttack, self).__init__(NoneSprite(), 'Влететь!', 'Влетает во\nврага и\nнаносит\nему 15 урона',
                                          CardType.Attack, ActionAreaType.OneEnemy, lambda y, x: x.apply_damage(15),
-                                         pygame.mixer.Sound("data/sounds/punch.wav"))
+                                         pygame.mixer.Sound("./source/data/sounds/punch.wav"))
 
 
 class FastPunch(Card):
     def __init__(self):
-        super(FastPunch, self).__init__(NoneSprite(), 'быстрый удар', 'сносит врага\nна атаку\nперсонажа', CardType.Attack,
-                                        ActionAreaType.OneEnemy, lambda y, x: x.apply_damage(y.attack * 1),
-                                        pygame.mixer.Sound("data/sounds/punch.wav"))
+        super(FastPunch, self).__init__(NoneSprite(), 'быстрый удар', 'сносит врага\nна атаку\nперсонажа',
+                                        CardType.Attack, ActionAreaType.OneEnemy,
+                                        lambda y, x: x.apply_damage(y.attack * 1),
+                                        pygame.mixer.Sound("./source/data/sounds/punch.wav"))
 
 
 class ShieldRestruct(Card):
     def __init__(self):
         super(ShieldRestruct, self).__init__(NoneSprite(), 'Пересборка', 'Подзаряжает\nщит на 10', CardType.Defend,
                                              ActionAreaType.SelfAction, lambda y, x: x.apply_shield(10),
-                                             pygame.mixer.Sound("data/sounds/shield_restruct.wav"))
+                                             pygame.mixer.Sound("./source/data/sounds/shield_restruct.wav"))
 
 
 class ShieldIncrease(Card):
     def __init__(self):
         super(ShieldIncrease, self).__init__(NoneSprite(), 'Восполнение', 'Подзаряжает\nщит\nсоюзника\nна 10',
-                                             CardType.Defend, ActionAreaType.OneAlly, lambda y, x: x.apply_shield(10))
+                                             CardType.Defend, ActionAreaType.OneAlly, lambda y, x: x.apply_shield(10),
+                                             pygame.mixer.Sound("./source/data/sounds/shield_restruct.wav"))
 
 
 class ShootAttack(Card):
     def __init__(self):
         super(ShootAttack, self).__init__(NoneSprite(), 'Выстрел', 'Стреляет во\nврага и\nнаносит\nему 20 урона',
                                           CardType.Attack, ActionAreaType.OneEnemy, lambda y, x: x.apply_damage(20),
-                                          pygame.mixer.Sound("data/sounds/rifle-shot.wav"))
+                                          pygame.mixer.Sound("./source/data/sounds/rifle-shot.wav"))
 
 
 class ShootEMGAttack(Card):
     def __init__(self):
         super(ShootEMGAttack, self).__init__(NoneSprite(), 'Выстрел', 'Стреляет во\nврага и\nнаносит\nему 15 урона',
                                              CardType.Attack, ActionAreaType.OneEnemy, lambda y, x: x.apply_damage(15),
-                                             pygame.mixer.Sound("data/sounds/emg-shot.wav"))
+                                             pygame.mixer.Sound("./source/data/sounds/emg-shot.wav"))
 
 
 class HealSelf(Card):
     def __init__(self):
         super(HealSelf, self).__init__(NoneSprite(), 'Утяжка', 'Лечит\nсебя на\n10 очков\nздоровья', CardType.Defend,
-                                       ActionAreaType.SelfAction, lambda y, x: x.apply_hp(10))
+                                       ActionAreaType.SelfAction, lambda y, x: x.apply_hp(10),
+                                       pygame.mixer.Sound("./source/data/sounds/heal.wav"))
 
 
 class HealChar(Card):
@@ -62,7 +65,8 @@ class HealChar(Card):
         super(HealChar, self).__init__(NoneSprite(), 'Аптечка', 'Лечит\nвыбранного\n'
                                                                 'персонажа на\n20 очков\nздоровья', CardType.Defend,
                                        ActionAreaType.OneAlly,
-                                       lambda y, x: x.apply_hp(20), pygame.mixer.Sound("data/sounds/heal.wav"))
+                                       lambda y, x: x.apply_hp(20),
+                                       pygame.mixer.Sound("./source/data/sounds/heal.wav"))
 
 
 class HealAllChars(Card):
@@ -70,7 +74,8 @@ class HealAllChars(Card):
         super(HealAllChars, self).__init__(NoneSprite(), 'Адреналин', 'Лечит\nвсех\nсоюзников\nна 10 очков\n'
                                                                       'здоровья', CardType.Defend,
                                            ActionAreaType.AllAllies,
-                                           lambda y, x: x.apply_hp(10), pygame.mixer.Sound("data/sounds/heal.wav"))
+                                           lambda y, x: x.apply_hp(10),
+                                           pygame.mixer.Sound("./source/data/sounds/heal.wav"))
 
 
 class DamageReduce(Card):
@@ -79,7 +84,7 @@ class DamageReduce(Card):
                                                                          'и уменьшает\nего урон\nна 10%',
                                            CardType.Weak, ActionAreaType.AllEnemies,
                                            lambda y, x: x.reduce_damage(0.9),
-                                           pygame.mixer.Sound("data/sounds/shield_restruct.wav"))
+                                           pygame.mixer.Sound("./source/data/sounds/shield_restruct.wav"))
 
 
 class ShotgunAttack(Card):
@@ -88,7 +93,7 @@ class ShotgunAttack(Card):
                                                                                   "урона",
                                             CardType.Attack, ActionAreaType.AllEnemies,
                                             lambda y, x: x.apply_damage(10),
-                                            pygame.mixer.Sound("data/sounds/shotgun-shot.wav"))
+                                            pygame.mixer.Sound("./source/data/sounds/shotgun-shot.wav"))
 
 
 class EarthquakeAttack(Card):
@@ -96,4 +101,4 @@ class EarthquakeAttack(Card):
         super(EarthquakeAttack, self).__init__(NoneSprite(), 'Землетрясение', 'наносит всем\nврагам 5\nурона',
                                                CardType.Attack, ActionAreaType.AllEnemies,
                                                lambda y, x: x.apply_damage(5),
-                                               pygame.mixer.Sound("data/sounds/punch.wav"))
+                                               pygame.mixer.Sound("./source/data/sounds/punch.wav"))
