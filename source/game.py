@@ -62,7 +62,6 @@ class Game:
         self._hub_screen = HubScreen(size)
         self._store_screen = StoreScreen(size, self._money, self._inventory)
         self._home_screen = HomeScreen(size)
-        self._inventory.extend_items({SmallPistolItem: 3})
 
     def init_game_elements(self):
         self._state = GameState.Home
@@ -177,7 +176,7 @@ class Game:
                 Cell(player_position[1], player_position[0], CellModifierType.EmptyCell)
 
         if self._battle_screen.battle.is_lose:
-            self._state = GameState.Home
+            self._state = GameState.Hub
             self.init_game_elements()
 
     def palmtop_view(self):
