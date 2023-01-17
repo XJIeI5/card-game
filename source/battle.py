@@ -3,6 +3,7 @@ import typing
 from source.card import ActionAreaType
 from source.in_battle_entity import InBattleEntity, HighlightType
 from source.player_entity import PlayerEntity
+from card_bundle import RushAttack
 
 
 class Battle:
@@ -39,7 +40,7 @@ class Battle:
 
     def get_first_entity(self):
         return sorted(self._player_entities + self._enemy_entities,
-                                                 key=lambda x: x.initiative)[::-1][0]
+                      key=lambda x: x.initiative)[::-1][0]
 
     def next_action(self) -> None:
         self.reset_picked_card()
@@ -61,6 +62,7 @@ class Battle:
 
         if self._current_acting_entity in self._enemy_entities:
             self._current_acting_entity.act(self._player_entities)
+            self.play_card_sound(RushAttack.sound)
             self.next_action()
             pygame.time.wait(100)
 
@@ -130,6 +132,7 @@ class Battle:
     def get_click(self, mouse_pos: typing.Tuple[int, int]) -> None:
         self.pick_card(mouse_pos)
         if self._picked_card:
+            self.play_card_sound(self._picked_card.sound)
             # Self
             if self._picked_card.action_area_type == ActionAreaType.SelfAction:
                 if self._current_acting_entity.rect.collidepoint(mouse_pos):
@@ -204,3 +207,6 @@ class Battle:
     @property
     def is_lose(self):
         return self._is_lose
+
+    def play_card_sound(self, sound):
+        sound.play()
