@@ -1,5 +1,5 @@
 from source.skill import Skill
-from source.card_bundle import HealChar
+from source.card_bundle import HealChar, ShieldIncrease, ShieldRestruct, EarthquakeAttack, DamageReduce
 
 
 class FirstAidSkill(Skill):
@@ -13,10 +13,15 @@ class FirstAidSkill(Skill):
         super(FirstAidSkill, self).__init__('первая помощь', 3, level_effects, description, current_level=1)
 
 
-class RapidHealingSkill(Skill):
+class SteelSkinSkill(Skill):
     def __init__(self):
-        level_effects = []
-        super(RapidHealingSkill, self).__init__('быстрое заживление', 0, level_effects, {})
+        level_effects = [lambda y: setattr(y, 'max_hp', y.max_hp + 5),
+                         lambda y: setattr(y, 'max_hp', y.max_hp + 5),
+                         lambda y: setattr(y, 'max_hp', y.max_hp + 10)]
+        description = {0: 'увеличивает максимальное здоровье на 5',
+                       1: 'увеличивает максимальное здоровье на 5',
+                       2: 'увеличивает максимальное здоровье на 10'}
+        super(SteelSkinSkill, self).__init__('стальная кожа', 3, level_effects, description, current_level=0)
 
 
 class DetoxificationSkill(Skill):
@@ -39,14 +44,20 @@ class NanoFirstAid(Skill):
 
 class DurabilitySkill(Skill):
     def __init__(self):
-        level_effects = []
-        super(DurabilitySkill, self).__init__('стойкость', 0, level_effects, {})
+        level_effects = [lambda y: y.extend_cards([ShieldIncrease]),
+                         lambda y: y.extend_cards([ShieldIncrease])]
+        description = {0: 'дает карту, которая восполняет щит союзника на 10',
+                       1: 'дает карту, которая восполняет щит союзника на 10'}
+        super(DurabilitySkill, self).__init__('стойкость', 2, level_effects, description, current_level=0)
 
 
 class EarthquakeSkill(Skill):
     def __init__(self):
-        level_effects = []
-        super(EarthquakeSkill, self).__init__('землетрясение', 0, level_effects, {})
+        level_effects = [lambda y: y.extend_cards([EarthquakeAttack]),
+                         lambda y: y.extend_cards([EarthquakeAttack])]
+        description = {0: 'дает карту, которая наносит всем врагам 5 урона',
+                       1: 'дает карту, которая наносит всем врагам 5 урона'}
+        super(EarthquakeSkill, self).__init__('землетрясение', 2, level_effects, description, current_level=0)
 
 
 class StrengtheningSkill(Skill):
@@ -69,14 +80,20 @@ class MassiveImpactSkill(Skill):
 
 class HackingSkill(Skill):
     def __init__(self):
-        level_effects = []
-        super(HackingSkill, self).__init__('взлом', 0, level_effects, {})
+        level_effects = [lambda y: y.extend_cards([DamageReduce]),
+                         lambda y: y.extend_cards([DamageReduce])]
+        description = {0: 'дает карту, которая уменьшает урон вражеской атаки',
+                       1: 'дает карту, которая уменьшает урон вражеской атаки'}
+        super(HackingSkill, self).__init__('взлом', 2, level_effects, description, current_level=0)
 
 
 class RechargeSkill(Skill):
     def __init__(self):
-        level_effects = []
-        super(RechargeSkill, self).__init__('подпитка', 0, level_effects, {})
+        level_effects = [lambda y: y.extend_cards([ShieldRestruct]),
+                         lambda y: y.extend_cards([ShieldIncrease])]
+        description = {0: 'дает карту, которая восполняет щит на 10',
+                       1: 'дает карту, которая восполняет щит на 10'}
+        super(RechargeSkill, self).__init__('подпитка', 2, level_effects, description, current_level=0)
 
 
 class AmyBombSkill(Skill):
