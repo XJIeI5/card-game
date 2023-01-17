@@ -6,26 +6,24 @@ from enum import Enum
 from source.in_battle_entity import InBattleEntity
 from source import skills_bundle
 from source.inventory import Inventory
-from source.data.sprites.primitives import BlueBackgroundSprite, GreenBackgroundSprite, ScaledSprite
+from source.data.sprites.primitives import ScaledSprite, FirstCharacterSprite, SecondCharacterSprite,\
+    ThirdCharacterSprite
 from source import items_bundle
 
 
 class MedicSpeciality:
     SkillTree = {0: [skills_bundle.FirstAidSkill],
-                 1: [skills_bundle.RapidHealingSkill, skills_bundle.DetoxificationSkill],
-                 2: [skills_bundle.NeurotoxinSkill, skills_bundle.DetoxificationSkill]}
+                 1: [skills_bundle.SteelSkinSkill]}
 
 
 class TankSpeciality:
     SkillTree = {0: [skills_bundle.DurabilitySkill],
-                 1: [skills_bundle.EarthquakeSkill, skills_bundle.StrengtheningSkill],
-                 2: [skills_bundle.ForceFieldSkill, skills_bundle.MassiveImpactSkill]}
+                 1: [skills_bundle.EarthquakeSkill]}
 
 
 class EngineerSpeciality:
     SkillTree = {0: [skills_bundle.HackingSkill],
-                 1: [skills_bundle.RechargeSkill, skills_bundle.AmyBombSkill],
-                 2: [skills_bundle.OverloadSkill, skills_bundle.AccelerationSkill]}
+                 1: [skills_bundle.RechargeSkill]}
 
 
 class ShooterSpeciality:
@@ -46,10 +44,12 @@ class PlayerEntity(InBattleEntity):
                  attack: int, level: int, speciality: PlayerSpeciality, initiative: int):
 
         self._index = index
-        if index == 0 or index == 2:
-            sprite = ScaledSprite(BlueBackgroundSprite())
+        if index == 0:
+            sprite = ScaledSprite(FirstCharacterSprite())
+        elif index == 1:
+            sprite = ScaledSprite(SecondCharacterSprite())
         else:
-            sprite = ScaledSprite(GreenBackgroundSprite())
+            sprite = ScaledSprite(ThirdCharacterSprite())
 
         super(PlayerEntity, self).__init__(sprite, name, max_hp, max_shields, attack, level, initiative)
 
@@ -61,6 +61,9 @@ class PlayerEntity(InBattleEntity):
         self._main_weapon: Inventory = Inventory(pygame.Rect(0, 0, 0, 0), 1, 1, 1)
         self._secondary_weapon: Inventory = Inventory(pygame.Rect(0, 0, 0, 0), 1, 1, 1)
 
+        self.apply_skills()
+
+    def apply_skills(self):
         for index, skills in self._speciality.value.SkillTree.items():
             for skill_class in skills:
                 self._skills[index] = self._skills.get(index, []) + [skill_class()]

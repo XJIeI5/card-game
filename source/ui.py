@@ -82,7 +82,6 @@ class AcceptDialog(pygame.sprite.Sprite):
                                     text='не ОК', font_size=self._font_size)
 
     def draw(self, screen: pygame.Surface, position: typing.Tuple[int, int]):
-        print(self.rect.height)
         self.rect.x, self.rect.y = position
 
         title_label = Label(GrayBackgroundSprite().image, (self.rect.width, self.rect.height // 10),

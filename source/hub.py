@@ -3,7 +3,7 @@ import typing
 import os
 import sys
 from source.ui import Label, ContextMenu
-from source.data.sprites.primitives import GrayBackgroundSprite, RedBackgroundSprite, BlueBackgroundSprite
+from source.data.sprites.primitives import PlanetChooseSprite, StoreSprite, BlueBackgroundSprite
 
 
 class GearSprite(pygame.sprite.Sprite):
@@ -18,8 +18,8 @@ class Hub:
         self._draw_rect = draw_rect
         self._is_save = False
 
-        self._planet_choose_button = Label(GrayBackgroundSprite().image, (100, 100))
-        self._store_button = Label(RedBackgroundSprite().image, (100, 100))
+        self._planet_choose_button = Label(PlanetChooseSprite().image, (200, 200))
+        self._store_button = Label(StoreSprite().image, (200, 200))
         self._settings_button = Label(GearSprite().image, (50, 50))
 
         self._settings_menu: typing.Union[None, ContextMenu] = None
@@ -44,7 +44,7 @@ class Hub:
     def draw(self, screen: pygame.Surface):
         place = self._planet_choose_button.image.get_rect(center=self._draw_rect.center)
         self._planet_choose_button.draw(screen, place.topleft)
-        self._store_button.draw(screen, (place.x + self._planet_choose_button.rect.width, place.y))
+        self._store_button.draw(screen, (0, place.y - 40))
         place = self._settings_button.image.get_rect(topright=self._draw_rect.topright)
         self._settings_button.draw(screen, place.topleft)
 
