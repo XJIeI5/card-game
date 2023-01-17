@@ -3,7 +3,7 @@ import typing
 from source.card import ActionAreaType
 from source.in_battle_entity import InBattleEntity, HighlightType
 from source.player_entity import PlayerEntity
-from card_bundle import RushAttack
+from source.card_bundle import RushAttack
 from source.ui import AcceptDialog
 from source.data.sprites.primitives import GrayBackgroundSprite
 from source.inventory import Inventory
@@ -73,7 +73,7 @@ class Battle:
 
         if self._current_acting_entity in self._enemy_entities:
             self._current_acting_entity.act(self._player_entities)
-            self.play_card_sound(RushAttack.sound)
+            self.play_card_sound(RushAttack().sound)
             self.next_action()
             pygame.time.wait(100)
 
