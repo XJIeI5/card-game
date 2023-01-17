@@ -13,13 +13,13 @@ class NoneSprite(pygame.sprite.Sprite):
 
 class RushAttack(Card):
     def __init__(self):
-        super(RushAttack, self).__init__(NoneSprite(), 'Влететь!', 'Влетает во\n врага и\nнаносит\nему 15 урона',
+        super(RushAttack, self).__init__(NoneSprite(), 'Влететь!', 'Влетает во\nврага и\nнаносит\nему 15 урона',
                                          CardType.Attack, ActionAreaType.OneEnemy, lambda y, x: x.apply_damage(15))
 
 
 class FastPunch(Card):
     def __init__(self):
-        super(FastPunch, self).__init__(NoneSprite(), 'быстрый удар', 'сносит врага\nна X хп', CardType.Attack,
+        super(FastPunch, self).__init__(NoneSprite(), 'быстрый удар', 'сносит врага\nна атаку\nперсонажа', CardType.Attack,
                                         ActionAreaType.OneEnemy, lambda y, x: x.apply_damage(y.attack * 1))
 
 
@@ -29,9 +29,15 @@ class ShieldRestruct(Card):
                                              ActionAreaType.SelfAction, lambda y, x: x.apply_shield(10))
 
 
+class ShieldIncrease(Card):
+    def __init__(self):
+        super(ShieldIncrease, self).__init__(NoneSprite(), 'Восполнение', 'Подзаряжает\nщит\nсоюзника\nна 10',
+                                             CardType.Defend, ActionAreaType.OneAlly, lambda y, x: x.apply_shield(10))
+
+
 class ShootAttack(Card):
     def __init__(self):
-        super(ShootAttack, self).__init__(NoneSprite(), 'Выстрел', 'Стреляет во\n врага и\nнаносит\nему 20 урона',
+        super(ShootAttack, self).__init__(NoneSprite(), 'Выстрел', 'Стреляет во\nврага и\nнаносит\nему 20 урона',
                                           CardType.Attack, ActionAreaType.OneEnemy, lambda y, x: x.apply_damage(20))
 
 
@@ -57,7 +63,7 @@ class HealChar(Card):
 
 class HealAllChars(Card):
     def __init__(self):
-        super(HealAllChars, self).__init__(NoneSprite(), 'Адреналин', 'Лечит\n всех персонажей\nна 10 очков\n'
+        super(HealAllChars, self).__init__(NoneSprite(), 'Адреналин', 'Лечит\nвсех\nсоюзников\nна 10 очков\n'
                                                                       'здоровья', CardType.Defend,
                                            ActionAreaType.AllAllies,
                                            lambda y, x: x.apply_hp(10))
@@ -66,14 +72,21 @@ class HealAllChars(Card):
 class DamageReduce(Card):
     def __init__(self):
         super(DamageReduce, self).__init__(NoneSprite(), 'Взлом оружия', 'Взламывает\nоружие\nпротивников\n'
-                                                                         'и уменьшает\nвходящий урон\nна 10%',
+                                                                         'и уменьшает\nего урон\nна 10%',
                                            CardType.Weak, ActionAreaType.AllEnemies,
                                            lambda y, x: x.reduce_damage(0.9))
 
 
 class ShotgunAttack(Card):
     def __init__(self):
-        super(ShotgunAttack, self).__init__(NoneSprite(), "Выстрел из дробовика", "Стреляет и\nнаносит всем\nврагам 10\n"
+        super(ShotgunAttack, self).__init__(NoneSprite(), "Выстрел Дроби", "Стреляет и\nнаносит всем\nврагам 10\n"
                                                                                   "урона",
                                             CardType.Attack, ActionAreaType.AllEnemies,
                                             lambda y, x: x.apply_damage(10))
+
+
+class EarthquakeAttack(Card):
+    def __init__(self):
+        super(EarthquakeAttack, self).__init__(NoneSprite(), 'Землетрясение', 'наносит всем\nврагам 5\nурона',
+                                               CardType.Attack, ActionAreaType.AllEnemies,
+                                               lambda y, x: x.apply_damage(5))
