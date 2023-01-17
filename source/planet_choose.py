@@ -39,7 +39,7 @@ class PlanetChoose:
 
     def save_maps(self, directory_name: str):
         with open(directory_name + '/available_maps.txt', mode='w', encoding='utf-8') as file:
-            pass
+            file.write(' '.join([str(int(i)) for i in self._planets_available.values()]))
 
         if not os.path.exists(directory_name + '/maps'):
             os.makedirs(directory_name + '/maps')
@@ -52,6 +52,13 @@ class PlanetChoose:
                 game_map.save_to_txt(file_name)
 
     def load_maps(self, directory_name: str):
+        try:
+            with open(directory_name + '/available_maps.txt', mode='r', encoding='utf-8') as file:
+                data = file.read()
+                self._planets_available = {index: bool(j) for index, j in enumerate(data.split())}
+        except FileNotFoundError:
+            pass
+
         filenames = next(os.walk(directory_name + '/maps'), (None, None, []))[2]
         for index, file_name in enumerate(filenames):
             if os.stat(directory_name + '/maps/' + file_name).st_size == 0:
