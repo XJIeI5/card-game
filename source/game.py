@@ -60,6 +60,8 @@ class Game:
         self._store_screen = StoreScreen(size, self._money)
 
     def run(self) -> None:
+        pygame.mixer.music.load('data/sounds/ambient.wav')
+        pygame.mixer.music.play(-1)
         while True:
             if self._state == GameState.GameMap:
                 self.game_map_view()
