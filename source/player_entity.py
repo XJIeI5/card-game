@@ -13,20 +13,17 @@ from source import items_bundle
 
 class MedicSpeciality:
     SkillTree = {0: [skills_bundle.FirstAidSkill],
-                 1: [skills_bundle.RapidHealingSkill, skills_bundle.DetoxificationSkill],
-                 2: [skills_bundle.NeurotoxinSkill, skills_bundle.DetoxificationSkill]}
+                 1: [skills_bundle.SteelSkinSkill]}
 
 
 class TankSpeciality:
     SkillTree = {0: [skills_bundle.DurabilitySkill],
-                 1: [skills_bundle.EarthquakeSkill, skills_bundle.StrengtheningSkill],
-                 2: [skills_bundle.ForceFieldSkill, skills_bundle.MassiveImpactSkill]}
+                 1: [skills_bundle.EarthquakeSkill]}
 
 
 class EngineerSpeciality:
     SkillTree = {0: [skills_bundle.HackingSkill],
-                 1: [skills_bundle.RechargeSkill, skills_bundle.AmyBombSkill],
-                 2: [skills_bundle.OverloadSkill, skills_bundle.AccelerationSkill]}
+                 1: [skills_bundle.RechargeSkill]}
 
 
 class ShooterSpeciality:
@@ -64,6 +61,9 @@ class PlayerEntity(InBattleEntity):
         self._main_weapon: Inventory = Inventory(pygame.Rect(0, 0, 0, 0), 1, 1, 1)
         self._secondary_weapon: Inventory = Inventory(pygame.Rect(0, 0, 0, 0), 1, 1, 1)
 
+        self.apply_skills()
+
+    def apply_skills(self):
         for index, skills in self._speciality.value.SkillTree.items():
             for skill_class in skills:
                 self._skills[index] = self._skills.get(index, []) + [skill_class()]
