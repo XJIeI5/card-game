@@ -89,7 +89,7 @@ class Game:
         self._inventory.extend_items({SmallPistolItem: 3})
 
     def run(self) -> None:
-        pygame.mixer.music.load('data/sounds/ambient.wav')
+        pygame.mixer.music.load('./source/data/sounds/ambient.wav')
         pygame.mixer.music.play(-1)
         while True:
             if self._state == GameState.GameMap:
