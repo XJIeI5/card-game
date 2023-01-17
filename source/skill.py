@@ -27,6 +27,8 @@ class Skill(pygame.sprite.Sprite):
             return
         if self._max_level_is_reached:
             return
+        if not self._current_level:
+            return
 
         self._level_effects[self._current_level - 1](entity)
 

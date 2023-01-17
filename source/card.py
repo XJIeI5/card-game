@@ -72,6 +72,10 @@ class Card(pygame.sprite.Sprite):
     @property
     def sound(self):
         return self._sound
+     
+    @property
+    def card_type(self):
+        return self._card_type
 
     def __str__(self):
         return self._name

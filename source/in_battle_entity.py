@@ -13,7 +13,7 @@ class HighlightType(Enum):
 
 class InBattleEntity(pygame.sprite.Sprite):
     def __init__(self, sprite: pygame.sprite.Sprite, name: str, max_hp: int, max_shields: int,
-                 attack: int, level: int, initiative: int, entity_type: str):
+                 attack: int, level: int, initiative: int):
         super(InBattleEntity, self).__init__()
         self._image = sprite.image
         self._name = name
@@ -26,7 +26,6 @@ class InBattleEntity(pygame.sprite.Sprite):
         self._strength = 0
         self._dexterity = 0
         self._intelligence = 0
-        self._entity_type = entity_type
         self._equipment = []
 
         self._cards: list[Card] = []   # a list of all cards in general
@@ -159,11 +158,11 @@ class InBattleEntity(pygame.sprite.Sprite):
     @property
     def image(self):
         scaled_image = pygame.transform.scale(self._image, (70, 70))
-        surface = pygame.Surface((scaled_image.get_size()[0] + 10, scaled_image.get_size()[1] + 40))
+        surface = pygame.Surface((scaled_image.get_size()[0] + 10, scaled_image.get_size()[1] + 50))
         pygame.draw.ellipse(surface, self._highlight_type.value,
                             (10, scaled_image.get_size()[1], scaled_image.get_size()[0], 30), 5)
 
-        surface.blit(scaled_image, (10, 10))
+        surface.blit(scaled_image, (10, 20))
 
         pygame.draw.rect(surface, pygame.Color('gray'), (0, 0, 50, 10))
         pygame.draw.rect(surface, pygame.Color('red'), (0, 0, 50 * (self._hp / self._max_hp) // 1, 10))
@@ -200,12 +199,18 @@ class InBattleEntity(pygame.sprite.Sprite):
     @property
     def entity_type(self):
         return self.entity_type
+
+    @property
     def hp(self):
         return self._hp
 
     @property
     def max_hp(self):
         return self._max_hp
+
+    @max_hp.setter
+    def max_hp(self, value):
+        self._max_hp = value
 
     @property
     def shields(self):
