@@ -133,7 +133,7 @@ class ScaledSprite(pygame.sprite.Sprite):
 class BeetleSprite(pygame.sprite.Sprite):
     def __init__(self):
         super(BeetleSprite, self).__init__()
-        self.image = pygame.image.load('./source/data/sprites/cacodemon.png')
+        self.image = pygame.image.load('./source/data/sprites/beetle.png')
         self.rect = self.image.get_rect()
 
 
@@ -204,4 +204,18 @@ class ShellSprite(pygame.sprite.Sprite):
     def __init__(self):
         super(ShellSprite, self).__init__()
         self.image = pygame.image.load('./source/data/sprites/shell.png')
+        self.rect = self.image.get_rect()
+
+
+class PlanetChooseSprite(pygame.sprite.Sprite):
+    def __init__(self):
+        super(PlanetChooseSprite, self).__init__()
+        self.image = pygame.image.load('./source/data/sprites/planet_choose.png')
+        self.rect = self.image.get_rect()
+
+
+class StoreSprite(pygame.sprite.Sprite):
+    def __init__(self):
+        super(StoreSprite, self).__init__()
+        self.image = pygame.image.load('./source/data/sprites/store.png')
         self.rect = self.image.get_rect()
