@@ -21,7 +21,7 @@ class ActionAreaType(Enum):
 
 class Card(pygame.sprite.Sprite):
     def __init__(self, sprite: pygame.sprite.Sprite, name: str, description: str, card_type: CardType,
-                 action_area_type: ActionAreaType, action):
+                 action_area_type: ActionAreaType, action, sound: pygame.mixer.Sound):
         super(Card, self).__init__()
         self._width, self._height = 100, 200
         self._mini_image = pygame.transform.scale(sprite.image, (70, 70))
@@ -32,7 +32,7 @@ class Card(pygame.sprite.Sprite):
         self._card_type = card_type
         self._action_area_type = action_area_type
         self._action = action
-
+        self._sound = sound
         self._picked = False
 
     def act(self, user, entity):
@@ -69,6 +69,10 @@ class Card(pygame.sprite.Sprite):
     def action_area_type(self):
         return self._action_area_type
 
+    @property
+    def sound(self):
+        return self._sound
+     
     @property
     def card_type(self):
         return self._card_type
