@@ -13,10 +13,10 @@ class HighlightType(Enum):
     CanBeChosen = pygame.Color('blue')
 
 
-class InBattleEntity(pygame.sprite.Sprite):
+class InBattleEntity(Animateble):
     def __init__(self, sprite: pygame.sprite.Sprite, name: str, max_hp: int, max_shields: int,
                  attack: int, level: int, initiative: int):
-        super(InBattleEntity, self).__init__()
+        super(InBattleEntity, self).__init__(sprite.rect)
         self._image = sprite.image
         self._name = name
         self.rect = sprite.rect
@@ -40,10 +40,6 @@ class InBattleEntity(pygame.sprite.Sprite):
         self._shields = max_shields
         self._is_dead = False
         self._is_poisoned = False
-    
-    def translate(self, pos: tuple[int, int]) -> int:
-        self.rect.x += 1
-        return 0
 
     def apply_damage(self, damage: int):
         remaining_damage = damage - self._shields
