@@ -39,7 +39,7 @@ class Game:
         self._screen.fill(pygame.Color('black'))
         self._fps = 60
         self._state = GameState.Home
-        self._money = Money(100)
+        self._money = Money(200)
         self._planet_index: typing.Union[None, int] = None
         cards = [ShieldRestruct, FastPunch]
         self._player_entities = [PlayerEntity(0, 'A person', 50, 25, 10, 1,
@@ -84,8 +84,6 @@ class Game:
         self._home_screen = HomeScreen(self._window_size)
 
     def run(self) -> None:
-        pygame.mixer.music.load('./source/data/sounds/ambient.wav')
-        pygame.mixer.music.play(-1)
         while True:
             if self._state == GameState.GameMap:
                 self.game_map_view()
