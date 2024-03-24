@@ -77,7 +77,10 @@ class Inventory:
     def remove_item(self, item: Item, count: int):
         item.reduce(count)
         if item.current_stack <= 0:
-            self._items.remove(item)
+            try:
+                self._items.remove(item)
+            except ValueError:
+                pass
 
     def draw(self, screen: pygame.Surface):
         start, end = (self._rows * self._columns) * (self._current_page - 1),\
