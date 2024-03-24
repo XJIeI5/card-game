@@ -115,14 +115,16 @@ class Equipment(Item):
 
     @property
     def action(self):
-        actions = [lambda x: x.extend_cards(self._cards)]
+        def add_card_to_player(player):
+            player.extend_cards(self._cards.copy())
+        actions = [lambda x: add_card_to_player(x)]
         for key, value in self._characteristics.items():
             actions.append(lambda x: setattr(x, key, getattr(x, key) + value))
         return lambda x: [action(x) for action in actions]
 
     @property
     def undo_action(self):
-        actions = [lambda x: x.remove_cards(self._cards)]
+        actions = [lambda x: x.remove_cards(self._cards.copy())]
         for key, value in self._characteristics.items():
             actions.append(lambda x: setattr(x, key, getattr(x, key) - value))
         return lambda x: [action(x) for action in actions]
