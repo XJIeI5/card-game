@@ -1,5 +1,6 @@
 import pygame
 import typing
+from enum import Enum
 from source.card import ActionAreaType
 from source.in_battle_entity import InBattleEntity, HighlightType
 from source.player_entity import PlayerEntity
@@ -7,6 +8,11 @@ from source.card_bundle import RushAttack
 from source.ui import AcceptDialog
 from source.data.sprites.primitives import GrayBackgroundSprite
 from source.inventory import Inventory
+
+
+class BattleState(Enum):
+    Gameplay = 0
+    Animation = 1
 
 
 def play_card_sound(sound):
@@ -33,6 +39,11 @@ class Battle:
 
         self._loot_show_dialog: typing.Union[None, AcceptDialog] = None
 
+        self._is_drawn_yet = False
+        self._wait: int = 0
+        self._after_wait = None
+        self._state: BattleState = BattleState.Gameplay
+
         self.apply_equipment_effects()
         self.init_move_order()
         self.next_action()
@@ -53,12 +64,13 @@ class Battle:
         return sorted(self._player_entities + self._enemy_entities,
                       key=lambda x: x.initiative)[::-1][0]
 
-    def next_action(self) -> None:
-        if all([i.is_dead for i in self._player_entities]):
-            self.lose_battle()
-            return
+    def wait(self, frames: int, after_wait) -> None:
+        self._wait = frames
+        self._after_wait = after_wait
+        self._state = BattleState.Animation
+        self.update()
 
-        self.reset_picked_card()
+    def set_current_entity(self) -> None:
         if self._current_acting_entity is None:
             self._current_acting_entity = self.get_first_entity()
         else:
@@ -69,36 +81,74 @@ class Battle:
                 self._current_acting_entity = self._move_order[self._current_acting_entity]
             except KeyError:
                 self._current_acting_entity = self.get_first_entity()
+        self._current_acting_entity.highlight_type = HighlightType.CurrentActingEntity
+
+    def next_action(self) -> None:
+        if all([i.is_dead for i in self._player_entities]):
+            self.lose_battle()
+            return
+
+        self.reset_picked_card()
+        self.set_current_entity()
 
         if self._current_acting_entity.is_dead:
             self.next_action()
         # set the acting highlight to the current entity
-        self._current_acting_entity.highlight_type = HighlightType.CurrentActingEntity
-
         if self._current_acting_entity in self._enemy_entities:
             self._current_acting_entity.act(self._player_entities)
-            play_card_sound(RushAttack().sound)
-            self.next_action()
-            pygame.time.wait(100)
+            self.wait(100, self.next_action)
+        else:
+            self.wait(0, None)
 
     def reset_picked_card(self) -> None:
         if self._picked_card:
             self._picked_card.picked = False
             self._picked_card = None
 
+    def update(self) -> None:
+        if self._wait > 0:
+            self._wait -= 1
+        elif self._wait == 0:
+            self._state = BattleState.Gameplay
+            try:
+                self._after_wait()
+            except TypeError:
+                pass
+
     def draw(self, screen: pygame.Surface) -> None:
         surface = pygame.Surface((self._draw_rect.width, self._draw_rect.height))
+        self.update()
 
+        if not self._is_drawn_yet:
+            self._is_drawn_yet = True
+            self.place_player(surface)
+            self.place_enemies(surface)
+        
+        if self._state == BattleState.Animation:
+            self.draw_animation(surface)
+        elif self._state == BattleState.Gameplay:
+            self.draw_gameplay(surface)
+        
+        screen.blit(surface, (self._draw_rect.x, self._draw_rect.y))
+    
+    def draw_animation(self, surface: pygame.Surface) -> None:
+        self._current_acting_entity.rect.x += 1
+        self.draw_player(surface)
+        self.draw_enemies(surface)
+    
+    def draw_gameplay(self, surface: pygame.Surface) -> None:
         self.draw_player(surface)
         self.draw_enemies(surface)
         self.draw_cards(surface)
         self.draw_action_order(surface)
         if self._loot_show_dialog is not None:
             self._loot_show_dialog.draw(surface, (self._draw_rect.width // 4, self._draw_rect.height // 4))
-
-        screen.blit(surface, (self._draw_rect.x, self._draw_rect.y))
-
+    
     def draw_player(self, surface: pygame.Surface) -> None:
+        for entity in self._player_entities:
+            surface.blit(entity.image, entity.rect)
+
+    def place_player(self, surface: pygame.Surface) -> None:
         start_x, start_y = self._draw_rect.width // (len(self._player_entities) + 1), \
                            self._draw_rect.height // (len(self._player_entities) + 1)
         offset_x, offset_y = -25, (self._draw_rect.height - 200) // (len(self._player_entities) + 1)
@@ -108,6 +158,10 @@ class Battle:
             surface.blit(entity.image, entity.rect)
 
     def draw_enemies(self, surface: pygame.Surface) -> None:
+        for entity in self._enemy_entities:
+            surface.blit(entity.image, entity.rect)
+    
+    def place_enemies(self, surface: pygame.Surface) -> None:
         start_x, start_y = self._draw_rect.width // 4, \
                            self._draw_rect.height // (len(self._enemy_entities) + 1)
         offset_x, offset_y = -25, (self._draw_rect.height - 200) // (len(self._enemy_entities) + 1)
@@ -151,12 +205,11 @@ class Battle:
         self.pick_card(mouse_pos)
         self.pick_up_loot(mouse_pos)
         if self._picked_card:
-            play_card_sound(self._picked_card.sound)
             # Self
             if self._picked_card.action_area_type == ActionAreaType.SelfAction:
                 if self._current_acting_entity.rect.collidepoint(mouse_pos):
                     self._picked_card.act(self._current_acting_entity, self._current_acting_entity)
-                    self.next_action()
+                    self.wait(100, self.next_action)
             # OneEnemy
             elif self._picked_card.action_area_type == ActionAreaType.OneEnemy:
                 for enemy in self._enemy_entities:
@@ -165,14 +218,14 @@ class Battle:
                         # gain exp to character
                         if enemy.is_dead and isinstance(self._current_acting_entity, PlayerEntity):
                             self._current_acting_entity.get_exp(enemy.level)
-                        self.next_action()
+                        self.wait(100, self.next_action)
                         break
             # OneAlly
             elif self._picked_card.action_area_type == ActionAreaType.OneAlly:
                 for ally in self._player_entities:
                     if ally.rect.collidepoint(mouse_pos) and not ally.is_dead:
                         self._picked_card.act(self._current_acting_entity, ally)
-                        self.next_action()
+                        self.wait(100, self.next_action)
                         break
             # AllEnemies
             elif self._picked_card.action_area_type == ActionAreaType.AllEnemies:
@@ -183,7 +236,7 @@ class Battle:
                             # gain exp to character
                             if enemy.is_dead and isinstance(self._current_acting_entity, PlayerEntity):
                                 self._current_acting_entity.get_exp(enemy.level)
-                        self.next_action()
+                        self.wait(100, self.next_action)
                         break
             # AllAllies
             elif self._picked_card.action_area_type == ActionAreaType.AllAllies:
@@ -191,7 +244,7 @@ class Battle:
                     if ally.rect.collidepoint(mouse_pos) and not ally.is_dead:
                         for act_ally in self._player_entities:
                             self._picked_card.act(self._current_acting_entity, act_ally)
-                        self.next_action()
+                        self.wait(100, self.next_action)
                         break
             if all([i.is_dead for i in self._enemy_entities]):
                 self.win_battle()
