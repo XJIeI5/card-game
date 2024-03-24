@@ -17,6 +17,7 @@ class Beetle(Enemy):
         self.extend_cards(cards)
 
     def act(self, player_entities: typing.List[InBattleEntity]) -> None:
+        super(Beetle, self).act(player_entities)
         card = random.choice(self._cards)
         player_entities = [i for i in player_entities if not i.is_dead]
         if len(player_entities) <= 0:
@@ -36,6 +37,7 @@ class Hover(Enemy):
         self.extend_cards(cards)
 
     def act(self, player_entities: typing.List[PlayerEntity]):
+        super(Beetle, self).act(player_entities)
         cards_to_act = self._cards
         if self._hp >= self._max_hp * 0.8:
             cards_to_act = [i for i in cards_to_act if i.card_type != CardType.Defend]
