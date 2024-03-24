@@ -3,11 +3,13 @@ from enum import Enum
 import pygame
 import random
 from source.card import Card
+from source.animation import Animateble, Animator
 
 
 class HighlightType(Enum):
-    Default = pygame.Color('yellow')
-    CurrentActingEntity = pygame.Color('white')
+    Dead = pygame.Color("black")
+    Default = pygame.Color('white')
+    CurrentActingEntity = pygame.Color('yellow')
     CanBeChosen = pygame.Color('blue')
 
 
@@ -38,6 +40,10 @@ class InBattleEntity(pygame.sprite.Sprite):
         self._shields = max_shields
         self._is_dead = False
         self._is_poisoned = False
+    
+    def translate(self, pos: tuple[int, int]) -> int:
+        self.rect.x += 1
+        return 0
 
     def apply_damage(self, damage: int):
         remaining_damage = damage - self._shields
