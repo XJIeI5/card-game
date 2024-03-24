@@ -39,13 +39,16 @@ class Battle:
 
         self._loot_show_dialog: typing.Union[None, AcceptDialog] = None
 
-        self._is_drawn_yet = False
         self._wait: int = 0
         self._after_wait = None
+        self._animate_func = lambda: 1
+        self._animate_func_params: list = []
         self._state: BattleState = BattleState.Gameplay
 
         self.apply_equipment_effects()
         self.init_move_order()
+        self.place_player()
+        self.place_enemies()
         self.next_action()
 
     def apply_equipment_effects(self):
@@ -64,9 +67,11 @@ class Battle:
         return sorted(self._player_entities + self._enemy_entities,
                       key=lambda x: x.initiative)[::-1][0]
 
-    def wait(self, frames: int, after_wait) -> None:
+    def animate(self, frames: int, after_wait, animate_func, params: list) -> None:
         self._wait = frames
         self._after_wait = after_wait
+        self._animate_func = animate_func
+        self._animate_func_params = params
         self._state = BattleState.Animation
         self.update()
 
@@ -96,9 +101,14 @@ class Battle:
         # set the acting highlight to the current entity
         if self._current_acting_entity in self._enemy_entities:
             self._current_acting_entity.act(self._player_entities)
-            self.wait(100, self.next_action)
+            steps = self._current_acting_entity.translate_steps(self._draw_rect.center)
+            old_pos = self._current_acting_entity.rect.center[:]
+            def go_back():
+                pygame.time.wait(200)
+                self.animate(steps, self.next_action, self._current_acting_entity.translate, [old_pos])
+            self.animate(steps, go_back, self._current_acting_entity.translate, [self._draw_rect.center])
         else:
-            self.wait(0, None)
+            self.animate(0, None, self._current_acting_entity.translate, [self._draw_rect.center])
 
     def reset_picked_card(self) -> None:
         if self._picked_card:
@@ -118,11 +128,6 @@ class Battle:
     def draw(self, screen: pygame.Surface) -> None:
         surface = pygame.Surface((self._draw_rect.width, self._draw_rect.height))
         self.update()
-
-        if not self._is_drawn_yet:
-            self._is_drawn_yet = True
-            self.place_player(surface)
-            self.place_enemies(surface)
         
         if self._state == BattleState.Animation:
             self.draw_animation(surface)
@@ -132,7 +137,7 @@ class Battle:
         screen.blit(surface, (self._draw_rect.x, self._draw_rect.y))
     
     def draw_animation(self, surface: pygame.Surface) -> None:
-        self._current_acting_entity.rect.x += 1
+        self._animate_func(*self._animate_func_params)
         self.draw_player(surface)
         self.draw_enemies(surface)
     
@@ -148,27 +153,25 @@ class Battle:
         for entity in self._player_entities:
             surface.blit(entity.image, entity.rect)
 
-    def place_player(self, surface: pygame.Surface) -> None:
+    def place_player(self) -> None:
         start_x, start_y = self._draw_rect.width // (len(self._player_entities) + 1), \
                            self._draw_rect.height // (len(self._player_entities) + 1)
         offset_x, offset_y = -25, (self._draw_rect.height - 200) // (len(self._player_entities) + 1)
         for i, entity in enumerate(self._player_entities):
             entity.rect.center = self._draw_rect.x + start_x + entity.rect.width // 4 * -i // 2, \
                                  self._draw_rect.y + start_y + offset_y * i
-            surface.blit(entity.image, entity.rect)
 
     def draw_enemies(self, surface: pygame.Surface) -> None:
         for entity in self._enemy_entities:
             surface.blit(entity.image, entity.rect)
     
-    def place_enemies(self, surface: pygame.Surface) -> None:
+    def place_enemies(self) -> None:
         start_x, start_y = self._draw_rect.width // 4, \
                            self._draw_rect.height // (len(self._enemy_entities) + 1)
         offset_x, offset_y = -25, (self._draw_rect.height - 200) // (len(self._enemy_entities) + 1)
         for i, entity in enumerate(self._enemy_entities):
             entity.rect.center = self._draw_rect.x + self._draw_rect.width - start_x - entity.rect.width / 4 * -i // 2,\
                                  self._draw_rect.y + start_y + offset_y * i
-            surface.blit(entity.image, entity.rect)
 
     def draw_cards(self, surface: pygame.Surface) -> None:
         if self._current_acting_entity in self._player_entities:
@@ -204,12 +207,21 @@ class Battle:
     def get_click(self, mouse_pos: typing.Tuple[int, int]) -> None:
         self.pick_card(mouse_pos)
         self.pick_up_loot(mouse_pos)
+
+        def animate():
+            steps = self._current_acting_entity.translate_steps(self._draw_rect.center)
+            old_pos = self._current_acting_entity.rect.center[:]
+            def go_back():
+                pygame.time.wait(200)
+                self.animate(steps, self.next_action, self._current_acting_entity.translate, [old_pos])
+            self.animate(steps, go_back, self._current_acting_entity.translate, [self._draw_rect.center])
+
         if self._picked_card:
             # Self
             if self._picked_card.action_area_type == ActionAreaType.SelfAction:
                 if self._current_acting_entity.rect.collidepoint(mouse_pos):
                     self._picked_card.act(self._current_acting_entity, self._current_acting_entity)
-                    self.wait(100, self.next_action)
+                    animate()
             # OneEnemy
             elif self._picked_card.action_area_type == ActionAreaType.OneEnemy:
                 for enemy in self._enemy_entities:
@@ -218,14 +230,14 @@ class Battle:
                         # gain exp to character
                         if enemy.is_dead and isinstance(self._current_acting_entity, PlayerEntity):
                             self._current_acting_entity.get_exp(enemy.level)
-                        self.wait(100, self.next_action)
+                        animate()
                         break
             # OneAlly
             elif self._picked_card.action_area_type == ActionAreaType.OneAlly:
                 for ally in self._player_entities:
                     if ally.rect.collidepoint(mouse_pos) and not ally.is_dead:
                         self._picked_card.act(self._current_acting_entity, ally)
-                        self.wait(100, self.next_action)
+                        animate()
                         break
             # AllEnemies
             elif self._picked_card.action_area_type == ActionAreaType.AllEnemies:
@@ -236,7 +248,7 @@ class Battle:
                             # gain exp to character
                             if enemy.is_dead and isinstance(self._current_acting_entity, PlayerEntity):
                                 self._current_acting_entity.get_exp(enemy.level)
-                        self.wait(100, self.next_action)
+                        animate()
                         break
             # AllAllies
             elif self._picked_card.action_area_type == ActionAreaType.AllAllies:
@@ -244,7 +256,7 @@ class Battle:
                     if ally.rect.collidepoint(mouse_pos) and not ally.is_dead:
                         for act_ally in self._player_entities:
                             self._picked_card.act(self._current_acting_entity, act_ally)
-                        self.wait(100, self.next_action)
+                        animate()
                         break
             if all([i.is_dead for i in self._enemy_entities]):
                 self.win_battle()
